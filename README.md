@@ -1,44 +1,48 @@
 # PDF Annotator
 
-Visor de PDF en el navegador para subrayar texto y añadir comentarios en Markdown. Las anotaciones
-se guardan **dentro del propio PDF**, sin base de datos ni servidor: al volver a abrir el archivo
-aparecen de nuevo.
+**English** · [Español](README.es.md)
 
-## Funcionalidades
+A browser-based PDF viewer for highlighting text and adding Markdown comments. Annotations are
+saved **inside the PDF itself**, with no database and no server: open the file again and they are
+still there.
 
-- Subrayado de texto en cuatro colores.
-- Comentarios en Markdown (con tablas), con vista previa; se pueden añadir, editar y eliminar.
-- Las anotaciones se guardan en el PDF de dos formas:
-  - una copia JSON completa, para restaurarlas exactamente en esta app;
-  - subrayados estándar de PDF con el comentario, visibles en Acrobat, Edge y otros lectores.
-- En Chrome y Edge se guarda sobre el mismo archivo (File System Access API); en otros navegadores
-  se descarga una copia anotada.
-- Exportar / importar las anotaciones como JSON (copia de seguridad y PDFs protegidos).
-- Zoom (Ctrl + rueda, Ctrl +/−, ajustar al ancho), modos de lectura Normal / Sepia / Noche y panel
-  lateral redimensionable con búsqueda.
+## Features
 
-## Privacidad
+- Text highlighting in four colours.
+- Markdown comments (tables included) with a live preview; add, edit and delete them.
+- Annotations are stored in the PDF in two ways:
+  - a full JSON copy, so this app restores them exactly;
+  - standard PDF highlight annotations carrying the comment, visible in Acrobat, Edge and other
+    readers.
+- In Chrome and Edge, saving writes back to the same file (File System Access API); other browsers
+  download an annotated copy.
+- Export / import annotations as JSON (backups and password-protected PDFs).
+- Zoom (Ctrl + wheel, Ctrl +/−, fit to width), Normal / Sepia / Night reading modes, and a
+  resizable, searchable sidebar.
 
-Todo ocurre en tu navegador: los PDF no se suben a ningún servidor.
+## Privacy
 
-## Desarrollo
+Everything runs in your browser: your PDFs are never uploaded anywhere.
 
-Requiere Node.js 20 o superior.
+## Development
+
+Requires Node.js 20 or later.
 
 ```bash
 npm install
-npm start            # servidor de desarrollo en http://localhost:4200
-npm run build        # compilación de producción en dist/
-npm test             # tests unitarios (Karma + Jasmine)
-npm run e2e          # tests end-to-end (Playwright, Chromium)
+npm start            # dev server at http://localhost:4200
+npm run build        # production build in dist/
+npm test             # unit tests (Karma + Jasmine)
+npm run e2e          # end-to-end tests (Playwright, Chromium)
 ```
 
-La primera vez que ejecutes los tests e2e instala el navegador con `npx playwright install chromium`.
+Before running the e2e tests for the first time, install the browser with
+`npx playwright install chromium`.
 
-Hecho con Angular 20, [pdf.js](https://mozilla.github.io/pdf.js/) para mostrar el PDF,
-[pdf-lib](https://pdf-lib.js.org/) para escribir las anotaciones y [marked](https://marked.js.org/)
-para el Markdown.
+Built with Angular 20, [pdf.js](https://mozilla.github.io/pdf.js/) to render PDFs,
+[pdf-lib](https://pdf-lib.js.org/) to write annotations, and [marked](https://marked.js.org/) for
+Markdown.
 
-## Licencia
+## License
 
 [MIT](LICENSE) © 2026 Marco Infanti
