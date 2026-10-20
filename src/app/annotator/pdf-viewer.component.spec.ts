@@ -1,4 +1,4 @@
-import { SelectionMarker } from './pdf-page.component';
+import type { SelectionMarker } from './pdf-page.component';
 import {
   markSelectingLayers,
   moveEndOfContent,

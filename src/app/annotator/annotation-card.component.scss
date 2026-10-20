@@ -56,6 +56,16 @@
   color: var(--text-muted);
   font-style: italic;
   font-size: 13px;
+}
+
+.annotation-card__quote-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
   cursor: pointer;
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -96,7 +106,10 @@
   border-radius: 6px;
   background: var(--bg);
   color: var(--text);
-  font: 13px/1.5 ui-monospace, Consolas, monospace;
+  font:
+    13px/1.5 ui-monospace,
+    Consolas,
+    monospace;
   resize: vertical;
 }
 

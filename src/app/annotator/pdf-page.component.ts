@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { RenderingCancelledException, TextLayer } from 'pdfjs-dist';
 import type { PDFPageProxy } from 'pdfjs-dist';
-import { Annotation, PdfRect } from './annotation.model';
+import type { Annotation, PdfRect } from './annotation.model';
 
 type Viewport = ReturnType<PDFPageProxy['getViewport']>;
 type RenderTask = ReturnType<PDFPageProxy['render']>;
@@ -128,8 +128,8 @@ export class PdfPageComponent {
   protected readonly viewport = computed(() => this.page().getViewport({ scale: this.scale() }));
   protected readonly boxes = computed<HighlightBox[]>(() => {
     const viewport = this.viewport();
-    return this.annotations().flatMap(annotation =>
-      annotation.rects.map(rect => ({
+    return this.annotations().flatMap((annotation) =>
+      annotation.rects.map((rect) => ({
         ...toViewportBox(viewport, rect),
         id: annotation.id,
         color: annotation.color,
@@ -139,7 +139,9 @@ export class PdfPageComponent {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
-    effect(() => this.render(this.viewport(), this.visible()));
+    effect(() => {
+      void this.render(this.viewport(), this.visible());
+    });
 
     afterNextRender(() => {
       const observer = new IntersectionObserver(
@@ -167,7 +169,7 @@ export class PdfPageComponent {
     const viewport = this.viewport();
     return {
       page: this.page().pageNumber,
-      rects: selected.boxes.map(box => toPdfRect(viewport, box)),
+      rects: selected.boxes.map((box) => toPdfRect(viewport, box)),
       quote: selected.quote,
     };
   }
@@ -183,13 +185,15 @@ export class PdfPageComponent {
     const origin = this.host.getBoundingClientRect();
     const x = clientX - origin.left;
     const y = clientY - origin.top;
-    const hits = this.boxes().filter(b => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom);
+    const hits = this.boxes().filter(
+      (b) => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom,
+    );
     return hits.at(-1)?.id ?? null;
   }
 
   /** Vertical offset of the annotation's first line, relative to this page. */
   offsetOf(annotation: Annotation): number {
-    const tops = annotation.rects.map(rect => toViewportBox(this.viewport(), rect).top);
+    const tops = annotation.rects.map((rect) => toViewportBox(this.viewport(), rect).top);
     return this.host.offsetTop + Math.min(...tops);
   }
 
@@ -208,11 +212,13 @@ export class PdfPageComponent {
 
   /** Returns false when the render was cancelled or superseded by a newer one. */
   private async drawCanvas(viewport: Viewport, canvas: HTMLCanvasElement): Promise<boolean> {
+    const context = canvas.getContext('2d');
+    if (!context) return false;
     const ratio = window.devicePixelRatio || 1;
     canvas.width = Math.floor(viewport.width * ratio);
     canvas.height = Math.floor(viewport.height * ratio);
     const task = this.page().render({
-      canvasContext: canvas.getContext('2d')!,
+      canvasContext: context,
       viewport,
       transform: ratio === 1 ? undefined : [ratio, 0, 0, ratio, 0, 0],
     });
@@ -248,7 +254,7 @@ export class PdfPageComponent {
 }
 
 function toViewportBox(viewport: Viewport, rect: PdfRect): Box {
-  const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(rect);
+  const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(rect) as number[];
   return {
     left: Math.min(x1, x2),
     top: Math.min(y1, y2),
@@ -258,8 +264,8 @@ function toViewportBox(viewport: Viewport, rect: PdfRect): Box {
 }
 
 function toPdfRect(viewport: Viewport, box: Box): PdfRect {
-  const [ax, ay] = viewport.convertToPdfPoint(box.left, box.top);
-  const [bx, by] = viewport.convertToPdfPoint(box.right, box.bottom);
+  const [ax, ay] = viewport.convertToPdfPoint(box.left, box.top) as number[];
+  const [bx, by] = viewport.convertToPdfPoint(box.right, box.bottom) as number[];
   return [Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by)];
 }
 
@@ -267,7 +273,7 @@ function toPdfRect(viewport: Viewport, box: Box): PdfRect {
 export function mergeLines(boxes: Box[]): Box[] {
   const lines: Box[] = [];
   for (const box of [...boxes].sort((a, b) => a.top - b.top || a.left - b.left)) {
-    const line = lines.find(l => {
+    const line = lines.find((l) => {
       const overlap = Math.min(l.bottom, box.bottom) - Math.max(l.top, box.top);
       return overlap > 0.5 * Math.min(l.bottom - l.top, box.bottom - box.top);
     });
@@ -307,8 +313,8 @@ export function selectedParts(range: Range, layer: Element): SpanPart[] {
 
 function boxesOf(range: Range, origin: DOMRect): Box[] {
   return [...range.getClientRects()]
-    .filter(r => r.width >= 1 && r.height >= 1)
-    .map(r => ({
+    .filter((r) => r.width >= 1 && r.height >= 1)
+    .map((r) => ({
       left: r.left - origin.left,
       top: r.top - origin.top,
       right: r.right - origin.left,
@@ -329,7 +335,7 @@ export function quoteOf(parts: SpanPart[]): string {
 function breaksLine(previous: Element, next: Element): boolean {
   const scope = previous.closest('.textLayer') ?? (previous.getRootNode() as ParentNode);
   return [...scope.querySelectorAll('br')].some(
-    br =>
+    (br) =>
       previous.compareDocumentPosition(br) & Node.DOCUMENT_POSITION_FOLLOWING &&
       next.compareDocumentPosition(br) & Node.DOCUMENT_POSITION_PRECEDING,
   );
@@ -342,7 +348,7 @@ export function selectionInLayer(
   origin: DOMRect,
 ): SelectedText | null {
   const parts = selectedParts(range, layer);
-  const boxes = mergeLines(parts.flatMap(part => boxesOf(part.range, origin)));
+  const boxes = mergeLines(parts.flatMap((part) => boxesOf(part.range, origin)));
   const quote = quoteOf(parts);
   return boxes.length && quote ? { boxes, quote } : null;
 }

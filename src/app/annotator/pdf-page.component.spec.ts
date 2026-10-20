@@ -1,6 +1,6 @@
+import type { Box } from './pdf-page.component';
 import {
   appendEndOfContent,
-  Box,
   mergeLines,
   quoteOf,
   selectedParts,
@@ -17,7 +17,7 @@ interface BuiltLayer {
 /** One span per [text, left] pair, a br after the last span of each line, then endOfContent. */
 function buildLayer(lines: [string, number][][]): BuiltLayer {
   const rows = lines.map((line, row) => line.map(([text, left]) => span(text, row * 30, left)));
-  const { layer, end } = layerOf(...rows.flatMap(row => [...row, br()]));
+  const { layer, end } = layerOf(...rows.flatMap((row) => [...row, br()]));
   return { layer, end, spans: rows };
 }
 
@@ -38,7 +38,7 @@ describe('mergeLines', () => {
 
   it('keeps different lines apart, sorted top to bottom', () => {
     const merged = mergeLines([box(40), box(0)]);
-    expect(merged.map(b => b.top)).toEqual([0, 40]);
+    expect(merged.map((b) => b.top)).toEqual([0, 40]);
   });
 
   it('does not mutate its input', () => {
@@ -53,14 +53,14 @@ describe('selectedParts', () => {
     const { layer, spans } = buildLayer([[['alpha one', 0]], [['bravo two', 0]]]);
     const selected = range(spans[0][0].firstChild!, 2, spans[1][0].firstChild!, 5);
     const parts = selectedParts(selected, layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['pha one', 'bravo']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['pha one', 'bravo']);
   });
 
   it('stops at the span before a moved endOfContent', () => {
     const { layer, end, spans } = buildLayer([[['alpha', 0]], [['bravo', 0]], [['charlie', 0]]]);
     spans[1][0].after(end);
     const selected = range(spans[0][0].firstChild!, 1, layer, [...layer.childNodes].indexOf(end));
-    expect(selectedParts(selected, layer).map(p => p.span)).toEqual([spans[0][0], spans[1][0]]);
+    expect(selectedParts(selected, layer).map((p) => p.span)).toEqual([spans[0][0], spans[1][0]]);
   });
 
   it('keeps only the start layer when the selection reaches a later layer', () => {
@@ -68,20 +68,20 @@ describe('selectedParts', () => {
     const second = buildLayer([[['foxtrot', 0]]]);
     const selected = range(first.spans[0][0].firstChild!, 2, second.spans[0][0].firstChild!, 3);
     const parts = selectedParts(selected, first.layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['pha', 'bravo']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['pha', 'bravo']);
   });
 
   it('skips a span the selection ends at the very start of', () => {
     const { layer, spans } = buildLayer([[['alpha', 0]], [['bravo', 0]]]);
     const selected = range(spans[0][0].firstChild!, 1, spans[1][0].firstChild!, 0);
-    expect(selectedParts(selected, layer).map(p => p.span)).toEqual([spans[0][0]]);
+    expect(selectedParts(selected, layer).map((p) => p.span)).toEqual([spans[0][0]]);
   });
 
   it('never returns br or endOfContent', () => {
     const { layer, spans } = buildLayer([[['alpha', 0]], [['bravo', 0]]]);
     const selected = range(spans[0][0].firstChild!, 0, layer, layer.childNodes.length);
     const parts = selectedParts(selected, layer);
-    expect(parts.every(p => p.span.tagName === 'SPAN')).toBeTrue();
+    expect(parts.every((p) => p.span.tagName === 'SPAN')).toBeTrue();
   });
 });
 

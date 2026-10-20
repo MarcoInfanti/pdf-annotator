@@ -1,5 +1,10 @@
 <header class="toolbar">
-  <button type="button" class="button button--primary" (click)="store.open()" [disabled]="store.busy()">
+  <button
+    type="button"
+    class="button button--primary"
+    (click)="store.open()"
+    [disabled]="store.busy()"
+  >
     Abrir PDF
   </button>
 
@@ -9,7 +14,11 @@
       class="button"
       (click)="store.save()"
       [disabled]="store.busy()"
-      [title]="store.canOverwrite() ? 'Guarda las anotaciones dentro del mismo PDF (Ctrl+S)' : 'Descarga el PDF con las anotaciones (Ctrl+S)'"
+      [title]="
+        store.canOverwrite()
+          ? 'Guarda las anotaciones dentro del mismo PDF (Ctrl+S)'
+          : 'Descarga el PDF con las anotaciones (Ctrl+S)'
+      "
     >
       Guardar
     </button>
@@ -44,18 +53,38 @@
     </div>
 
     <div class="toolbar__zoom" role="group" aria-label="Zoom">
-      <button type="button" class="icon-button" aria-label="Alejar" title="Alejar (Ctrl −)" (click)="zoom(-1)">−</button>
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Alejar"
+        title="Alejar (Ctrl −)"
+        (click)="zoom(-1)"
+      >
+        −
+      </button>
       <select class="toolbar__zoom-select" aria-label="Nivel de zoom" (change)="changeZoom($event)">
         @if (!zoomSteps.includes(scale())) {
           <option [value]="scale()" selected>{{ zoomPercent() }}%</option>
         }
         @for (step of zoomSteps; track step) {
-          <option [value]="step" [selected]="step === scale()">{{ step * 100 | number: '1.0-0' }}%</option>
+          <option [value]="step" [selected]="step === scale()">
+            {{ step * 100 | number: '1.0-0' }}%
+          </option>
         }
         <option value="fit">Ajustar al ancho</option>
       </select>
-      <button type="button" class="icon-button" aria-label="Acercar" title="Acercar (Ctrl +)" (click)="zoom(1)">+</button>
-      <button type="button" class="button" title="Ajustar al ancho" (click)="fitWidth()">↔ Ancho</button>
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Acercar"
+        title="Acercar (Ctrl +)"
+        (click)="zoom(1)"
+      >
+        +
+      </button>
+      <button type="button" class="button" title="Ajustar al ancho" (click)="fitWidth()">
+        ↔ Ancho
+      </button>
     </div>
   }
 </header>
@@ -63,7 +92,14 @@
 @if (store.notice(); as notice) {
   <div class="notice" role="status">
     {{ notice }}
-    <button type="button" class="icon-button" aria-label="Cerrar aviso" (click)="store.dismissNotice()">×</button>
+    <button
+      type="button"
+      class="icon-button"
+      aria-label="Cerrar aviso"
+      (click)="store.dismissNotice()"
+    >
+      ×
+    </button>
   </div>
 }
 
@@ -101,7 +137,9 @@
 
     <aside class="sidebar" aria-label="Anotaciones" [style.width.px]="sidebarWidth()">
       <div class="sidebar__header">
-        <h2>Comentarios <span class="sidebar__count">{{ commentCount() }}</span></h2>
+        <h2>
+          Comentarios <span class="sidebar__count">{{ commentCount() }}</span>
+        </h2>
         <input
           type="search"
           class="sidebar__search"
@@ -128,8 +166,8 @@
             @if (search()) {
               Ningún comentario coincide con la búsqueda.
             } @else {
-              Selecciona texto en el PDF y elige un color para subrayarlo y comentarlo.
-              Haz clic en un subrayado para comentarlo, cambiarle el color o eliminarlo.
+              Selecciona texto en el PDF y elige un color para subrayarlo y comentarlo. Haz clic en
+              un subrayado para comentarlo, cambiarle el color o eliminarlo.
             }
           </p>
         }
@@ -144,7 +182,9 @@
       Las anotaciones se guardan <strong>dentro del propio PDF</strong>, así que al volver a abrirlo
       aparecerán de nuevo. También se ven como comentarios en otros lectores (Acrobat, Edge…).
     </p>
-    <button type="button" class="button button--primary button--large" (click)="store.open()">Abrir PDF</button>
+    <button type="button" class="button button--primary button--large" (click)="store.open()">
+      Abrir PDF
+    </button>
   </main>
 }
 

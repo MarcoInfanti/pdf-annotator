@@ -11,7 +11,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Annotation, HIGHLIGHT_COLORS } from './annotation.model';
+import type { Annotation } from './annotation.model';
+import { HIGHLIGHT_COLORS } from './annotation.model';
 import { MarkdownPipe } from './markdown.pipe';
 
 @Component({
@@ -30,11 +31,11 @@ export class AnnotationCardComponent {
   readonly annotation = input.required<Annotation>();
   readonly selected = input(false);
   readonly editing = input(false);
-  readonly focusRequested = output<void>();
-  readonly editRequested = output<void>();
+  readonly focusRequested = output();
+  readonly editRequested = output();
   readonly commentSaved = output<string>();
-  readonly editCancelled = output<void>();
-  readonly deleteRequested = output<void>();
+  readonly editCancelled = output();
+  readonly deleteRequested = output();
   readonly colorChanged = output<string>();
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -69,7 +70,8 @@ export class AnnotationCardComponent {
     const start = textarea.selectionStart;
     const before = value.slice(0, start);
     const after = value.slice(textarea.selectionEnd);
-    const prefix = before === '' ? '' : before.endsWith('\n\n') ? '' : before.endsWith('\n') ? '\n' : '\n\n';
+    const prefix =
+      before === '' ? '' : before.endsWith('\n\n') ? '' : before.endsWith('\n') ? '\n' : '\n\n';
     const table = '| Columna 1 | Columna 2 |\n| --- | --- |\n|  |  |\n|  |  |\n';
     const suffix = after === '' || after.startsWith('\n') ? '' : '\n';
     this.comment.setValue(before + prefix + table + suffix + after);

@@ -4,7 +4,8 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   retries: 0,
-  use: { baseURL: 'http://localhost:4300', trace: 'retain-on-failure' },
+  // Pinned so language detection (navigator.language) is deterministic in every run
+  use: { baseURL: 'http://localhost:4300', trace: 'retain-on-failure', locale: 'es-ES' },
   projects: [
     {
       name: 'chromium',

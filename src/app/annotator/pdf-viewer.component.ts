@@ -14,8 +14,9 @@ import {
 } from '@angular/core';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
-import { Annotation, TextSelection } from './annotation.model';
-import { PdfPageComponent, SelectionMarker } from './pdf-page.component';
+import type { Annotation, TextSelection } from './annotation.model';
+import type { SelectionMarker } from './pdf-page.component';
+import { PdfPageComponent } from './pdf-page.component';
 
 GlobalWorkerOptions.workerSrc = 'pdf.worker.min.mjs';
 
@@ -90,15 +91,19 @@ export class PdfViewerComponent {
   });
 
   constructor() {
-    effect(() => this.loadDocument(this.data()));
+    effect(() => {
+      void this.loadDocument(this.data());
+    });
     effect(() => this.keepCenterOnZoom(this.scale()));
-    this.destroyRef.onDestroy(() => this.pdf?.destroy());
+    this.destroyRef.onDestroy(() => {
+      void this.pdf?.destroy();
+    });
     afterNextRender(() => this.listenToSelection());
   }
 
   /** Scale at which the first page fills the available width. */
   fitWidthScale(): number | null {
-    const page = this.pages()[0];
+    const page = this.pages().at(0);
     if (!page) return null;
     const padding = 32;
     const available = this.host.clientWidth - padding;
@@ -106,7 +111,7 @@ export class PdfViewerComponent {
   }
 
   scrollTo(annotation: Annotation): void {
-    const page = this.pageComponents()[annotation.page - 1];
+    const page = annotation.page > 0 ? this.pageComponents().at(annotation.page - 1) : undefined;
     if (page) {
       this.host.scrollTo({ top: page.offsetOf(annotation) - 80, behavior: 'smooth' });
     }
@@ -149,7 +154,7 @@ export class PdfViewerComponent {
       this.captureFrom(selection, event);
       return;
     }
-    const page = this.pageComponents().find(p => p.contains(event.target as Node));
+    const page = this.pageComponents().find((p) => p.contains(event.target as Node));
     this.annotationClicked.emit(page?.hitTest(event.clientX, event.clientY) ?? null);
   }
 
@@ -159,7 +164,7 @@ export class PdfViewerComponent {
     // The pressed page (the selection's anchor) wins over DOM order, so a backward drag keeps
     // the part on the page where it started
     const anchor = selection.anchorNode ?? range.startContainer;
-    const page = this.pageComponents().find(p => p.contains(anchor));
+    const page = this.pageComponents().find((p) => p.contains(anchor));
     const captured = page?.captureSelection(range);
     if (captured) {
       this.textSelected.emit({ ...captured, clientX: event.clientX, clientY: event.clientY });
@@ -183,7 +188,7 @@ export class PdfViewerComponent {
 
   /** Markers of the pages that are currently rendered. */
   private selectionMarkers(): SelectionMarker[] {
-    return this.pageComponents().flatMap(page => page.selectionMarker() ?? []);
+    return this.pageComponents().flatMap((page) => page.selectionMarker() ?? []);
   }
 
   private releasePointer(): void {
@@ -244,7 +249,7 @@ export function resetMarker({ layer, end }: SelectionMarker): void {
 export function markSelectingLayers(selection: Selection, markers: SelectionMarker[]): void {
   const ranges = Array.from({ length: selection.rangeCount }, (_, i) => selection.getRangeAt(i));
   for (const marker of markers) {
-    if (ranges.some(range => range.intersectsNode(marker.layer))) {
+    if (ranges.some((range) => range.intersectsNode(marker.layer))) {
       marker.layer.classList.add('selecting');
     } else {
       resetMarker(marker);
@@ -270,7 +275,7 @@ export function moveEndOfContent(
   let anchor: Node | null = modifyStart ? range.startContainer : range.endContainer;
   if (anchor.nodeType === Node.TEXT_NODE) anchor = anchor.parentNode;
   const layer = anchor?.parentElement?.closest('.textLayer');
-  const marker = markers.find(m => m.layer === layer);
+  const marker = markers.find((m) => m.layer === layer);
   if (!anchor || !marker || !anchor.parentElement) return;
   marker.end.style.width = marker.layer.style.width;
   marker.end.style.height = marker.layer.style.height;

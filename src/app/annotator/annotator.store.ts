@@ -1,12 +1,9 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import {
-  Annotation,
-  HIGHLIGHT_COLORS,
-  parseAnnotationFile,
-  serializeAnnotations,
-  TextSelection,
-} from './annotation.model';
+import type { Annotation, TextSelection } from './annotation.model';
+import { HIGHLIGHT_COLORS, parseAnnotationFile, serializeAnnotations } from './annotation.model';
+import type { PickedFile } from './file-access.service';
 import { FileAccessService } from './file-access.service';
+import type { DecodedPdf } from './pdf-annotation-codec';
 import { PdfAnnotationCodec } from './pdf-annotation-codec';
 
 interface OpenDocument {
@@ -47,23 +44,27 @@ export class AnnotatorStore {
     await this.run(async () => {
       const picked = await this.files.pickPdf();
       if (!picked) return;
-      const decoded = await this.codec.decode(picked.bytes);
-      this._document.set({
-        name: picked.name,
-        handle: picked.handle,
-        cleanBytes: decoded.cleanBytes,
-        encrypted: decoded.encrypted,
-      });
-      this._annotations.set(decoded.annotations);
-      this._selectedId.set(null);
-      this._editingId.set(null);
-      this._dirty.set(false);
-      this._notice.set(
-        decoded.encrypted
-          ? 'Este PDF está protegido: las anotaciones se guardarán en un archivo .json aparte.'
-          : null,
-      );
+      this.applyDecoded(picked, await this.codec.decode(picked.bytes));
     });
+  }
+
+  /** Replaces the whole session state with a freshly opened document. */
+  private applyDecoded(picked: PickedFile, decoded: DecodedPdf): void {
+    this._document.set({
+      name: picked.name,
+      handle: picked.handle,
+      cleanBytes: decoded.cleanBytes,
+      encrypted: decoded.encrypted,
+    });
+    this._annotations.set(decoded.annotations);
+    this._selectedId.set(null);
+    this._editingId.set(null);
+    this._dirty.set(false);
+    this._notice.set(
+      decoded.encrypted
+        ? 'Este PDF está protegido: las anotaciones se guardarán en un archivo .json aparte.'
+        : null,
+    );
   }
 
   /** Saves into the same PDF when possible; otherwise downloads an annotated copy. */
@@ -92,7 +93,11 @@ export class AnnotatorStore {
     if (!doc || doc.encrypted) return;
     await this.run(async () => {
       const bytes = await this.codec.encode(doc.cleanBytes, this._annotations());
-      this.files.download(bytes, doc.name.replace(/\.pdf$/i, '') + '-anotado.pdf', 'application/pdf');
+      this.files.download(
+        bytes,
+        doc.name.replace(/\.pdf$/i, '') + '-anotado.pdf',
+        'application/pdf',
+      );
     });
   }
 
@@ -109,8 +114,8 @@ export class AnnotatorStore {
       const json = await this.files.pickText('.json,application/json');
       if (json === null) return;
       const imported = parseAnnotationFile(json);
-      const known = new Set(this._annotations().map(a => a.id));
-      this._annotations.update(list => [...list, ...imported.filter(a => !known.has(a.id))]);
+      const known = new Set(this._annotations().map((a) => a.id));
+      this._annotations.update((list) => [...list, ...imported.filter((a) => !known.has(a.id))]);
       this._dirty.set(true);
     });
   }
@@ -127,7 +132,7 @@ export class AnnotatorStore {
       createdAt: now,
       updatedAt: now,
     };
-    this._annotations.update(list => [...list, annotation]);
+    this._annotations.update((list) => [...list, annotation]);
     this._selectedId.set(annotation.id);
     this._editingId.set(annotation.id);
     this._dirty.set(true);
@@ -143,7 +148,7 @@ export class AnnotatorStore {
   }
 
   remove(id: string): void {
-    this._annotations.update(list => list.filter(a => a.id !== id));
+    this._annotations.update((list) => list.filter((a) => a.id !== id));
     if (this._selectedId() === id) this._selectedId.set(null);
     if (this._editingId() === id) this._editingId.set(null);
     this._dirty.set(true);
@@ -168,8 +173,8 @@ export class AnnotatorStore {
 
   private patch(id: string, changes: Partial<Annotation>): void {
     const updatedAt = new Date().toISOString();
-    this._annotations.update(list =>
-      list.map(a => (a.id === id ? { ...a, ...changes, updatedAt } : a)),
+    this._annotations.update((list) =>
+      list.map((a) => (a.id === id ? { ...a, ...changes, updatedAt } : a)),
     );
     this._dirty.set(true);
   }
@@ -188,5 +193,5 @@ export class AnnotatorStore {
 }
 
 function topOf(annotation: Annotation): number {
-  return Math.max(...annotation.rects.map(rect => rect[3]));
+  return Math.max(...annotation.rects.map((rect) => rect[3]));
 }

@@ -1,4 +1,5 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import type { PipeTransform } from '@angular/core';
+import { Pipe } from '@angular/core';
 import { marked } from 'marked';
 
 /** Renders Markdown to HTML. Bind the result to [innerHTML] so Angular sanitizes it. */

@@ -41,7 +41,7 @@ export class ReadingModeService {
 function readStoredMode(): ReadingMode {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return READING_MODES.some(m => m.value === stored) ? (stored as ReadingMode) : 'normal';
+    return READING_MODES.some((m) => m.value === stored) ? (stored as ReadingMode) : 'normal';
   } catch {
     return 'normal';
   }

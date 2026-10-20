@@ -9,7 +9,8 @@ import {
   PDFRef,
   PDFString,
 } from 'pdf-lib';
-import { Annotation, parseAnnotationFile, serializeAnnotations } from './annotation.model';
+import type { Annotation } from './annotation.model';
+import { parseAnnotationFile, serializeAnnotations } from './annotation.model';
 
 /** Catalog key holding the JSON with every annotation (the source of truth). */
 const DATA_KEY = PDFName.of('PdfAnnotationsData');
@@ -45,7 +46,7 @@ export class PdfAnnotationCodec {
     const doc = await PDFDocument.load(cleanBytes, { updateMetadata: false });
     const pages = doc.getPages();
     for (const annotation of annotations) {
-      const page = pages[annotation.page - 1];
+      const page = annotation.page > 0 ? pages.at(annotation.page - 1) : undefined;
       if (page) {
         page.node.addAnnot(doc.context.register(this.highlightDict(doc, annotation, page.ref)));
       }
@@ -115,5 +116,5 @@ export class PdfAnnotationCodec {
 
 function hexToRgb(hex: string): number[] {
   const value = parseInt(hex.slice(1), 16);
-  return [(value >> 16) & 255, (value >> 8) & 255, value & 255].map(c => c / 255);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255].map((c) => c / 255);
 }

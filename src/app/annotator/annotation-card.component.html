@@ -24,23 +24,57 @@
   </div>
 
   @if (!editing()) {
-    <button type="button" class="icon-button" title="Editar comentario" aria-label="Editar comentario" (click)="editRequested.emit()">✎</button>
+    <button
+      type="button"
+      class="icon-button"
+      title="Editar comentario"
+      aria-label="Editar comentario"
+      (click)="editRequested.emit()"
+    >
+      ✎
+    </button>
   }
-  <button type="button" class="icon-button icon-button--danger" title="Eliminar" aria-label="Eliminar anotación" (click)="deleteRequested.emit()">🗑</button>
+  <button
+    type="button"
+    class="icon-button icon-button--danger"
+    title="Eliminar"
+    aria-label="Eliminar anotación"
+    (click)="deleteRequested.emit()"
+  >
+    🗑
+  </button>
 </header>
 
-<blockquote class="annotation-card__quote" (click)="focusRequested.emit()">{{ annotation().quote }}</blockquote>
+<blockquote class="annotation-card__quote">
+  <button type="button" class="annotation-card__quote-button" (click)="focusRequested.emit()">
+    {{ annotation().quote }}
+  </button>
+</blockquote>
 
 @if (editing()) {
   <div class="annotation-card__tabs" role="tablist">
-    <button type="button" role="tab" [attr.aria-selected]="!preview()" (click)="preview.set(false)">Escribir</button>
-    <button type="button" role="tab" [attr.aria-selected]="preview()" (click)="preview.set(true)">Vista previa</button>
+    <button type="button" role="tab" [attr.aria-selected]="!preview()" (click)="preview.set(false)">
+      Escribir
+    </button>
+    <button type="button" role="tab" [attr.aria-selected]="preview()" (click)="preview.set(true)">
+      Vista previa
+    </button>
     @if (!preview()) {
-      <button type="button" class="annotation-card__insert" title="Insertar una tabla de ejemplo" (click)="insertTable()">⊞ Tabla</button>
+      <button
+        type="button"
+        class="annotation-card__insert"
+        title="Insertar una tabla de ejemplo"
+        (click)="insertTable()"
+      >
+        ⊞ Tabla
+      </button>
     }
   </div>
   @if (preview()) {
-    <div class="markdown annotation-card__preview" [innerHTML]="comment.value || '_Sin comentario_' | markdown"></div>
+    <div
+      class="markdown annotation-card__preview"
+      [innerHTML]="comment.value || '_Sin comentario_' | markdown"
+    ></div>
   } @else {
     <textarea
       #textarea
@@ -60,5 +94,7 @@
 } @else if (annotation().comment) {
   <div class="markdown" [innerHTML]="annotation().comment | markdown"></div>
 } @else {
-  <button type="button" class="annotation-card__add" (click)="editRequested.emit()">+ Añadir comentario</button>
+  <button type="button" class="annotation-card__add" (click)="editRequested.emit()">
+    + Añadir comentario
+  </button>
 }

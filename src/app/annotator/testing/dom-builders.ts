@@ -15,7 +15,7 @@ export function track<T extends HTMLElement>(element: T): T {
 
 /** Removes everything the builders appended and clears the document selection. Call from `afterEach`. */
 export function cleanup(): void {
-  created.splice(0).forEach(element => element.remove());
+  created.splice(0).forEach((element) => element.remove());
   document.getSelection()?.removeAllRanges();
 }
 

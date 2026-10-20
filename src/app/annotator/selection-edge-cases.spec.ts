@@ -22,25 +22,30 @@ describe('selectedParts (adversarial)', () => {
   it('returns nothing for a range that sits only on endOfContent', () => {
     const { layer, end } = layerOf(span('alpha'));
     expect(selectedParts(range(end, 0, end, 0), layer)).toEqual([]);
-    expect(selectedParts(range(layer, layer.childNodes.length - 1, layer, layer.childNodes.length), layer)).toEqual([]);
+    expect(
+      selectedParts(
+        range(layer, layer.childNodes.length - 1, layer, layer.childNodes.length),
+        layer,
+      ),
+    ).toEqual([]);
   });
 
   it('ignores empty spans', () => {
     const { layer } = layerOf(span('alpha'), span(''), span('bravo', 0, 50));
     const parts = selectedParts(range(layer, 0, layer, layer.childNodes.length), layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['alpha', 'bravo']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['alpha', 'bravo']);
   });
 
   it('excludes the span a selection starts at the very end of', () => {
     const { layer, spans } = layerOf(span('alpha'), br(), span('bravo', 30));
     const parts = selectedParts(range(spans[0].firstChild!, 5, spans[1].firstChild!, 3), layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['bra']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['bra']);
   });
 
   it('selects whole text when boundaries are at offset 0 and text length', () => {
     const { layer, spans } = layerOf(span('alpha'), br(), span('bravo', 30));
     const parts = selectedParts(range(spans[0].firstChild!, 0, spans[1].firstChild!, 5), layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['alpha', 'bravo']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['alpha', 'bravo']);
   });
 
   it('finds spans nested in markedContent wrappers', () => {
@@ -49,7 +54,7 @@ describe('selectedParts (adversarial)', () => {
     wrapper.append(span('alpha'), span('beta', 0, 40));
     const { layer } = layerOf(wrapper);
     const parts = selectedParts(range(layer, 0, layer, layer.childNodes.length), layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['alpha', 'beta']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['alpha', 'beta']);
   });
 
   it('works for a backward-built range (selection focus before anchor, normalised by the DOM)', () => {
@@ -58,7 +63,7 @@ describe('selectedParts (adversarial)', () => {
     sel.collapse(spans[1].firstChild, 3);
     sel.extend(spans[0].firstChild!, 2);
     const parts = selectedParts(sel.getRangeAt(0), layer);
-    expect(parts.map(p => p.range.toString())).toEqual(['pha', 'bra']);
+    expect(parts.map((p) => p.range.toString())).toEqual(['pha', 'bra']);
   });
 });
 
@@ -131,7 +136,9 @@ describe('selectionInLayer (adversarial)', () => {
 describe('moveEndOfContent / resetMarker (adversarial)', () => {
   it('handles a range whose end is the endOfContent element itself', () => {
     const m = layerOf(span('alpha'), span('bravo', 30));
-    expect(() => moveEndOfContent(range(m.spans[0].firstChild!, 1, m.end, 0), null, [m])).not.toThrow();
+    expect(() =>
+      moveEndOfContent(range(m.spans[0].firstChild!, 1, m.end, 0), null, [m]),
+    ).not.toThrow();
     expect(m.layer.contains(m.end)).toBeTrue();
   });
 

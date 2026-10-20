@@ -31,13 +31,8 @@
                 "output": "/"
               }
             ],
-            "styles": [
-              "node_modules/pdfjs-dist/web/pdf_viewer.css",
-              "src/styles.scss"
-            ],
-            "allowedCommonJsDependencies": [
-              "pako"
-            ]
+            "styles": ["node_modules/pdfjs-dist/web/pdf_viewer.css", "src/styles.scss"],
+            "allowedCommonJsDependencies": ["pako"]
           },
           "configurations": {
             "production": {
@@ -75,6 +70,17 @@
           },
           "defaultConfiguration": "development"
         },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html",
+              "e2e/**/*.ts",
+              "playwright.config.ts"
+            ]
+          }
+        },
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
         },
@@ -89,9 +95,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           }
         }
       }

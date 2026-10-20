@@ -1,14 +1,15 @@
 import { DecimalPipe } from '@angular/common';
+import type { ElementRef } from '@angular/core';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  ElementRef,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
-import { Annotation, HIGHLIGHT_COLORS, TextSelection } from './annotation.model';
+import type { Annotation, TextSelection } from './annotation.model';
+import { HIGHLIGHT_COLORS } from './annotation.model';
 import { AnnotationCardComponent } from './annotation-card.component';
 import { AnnotatorStore } from './annotator.store';
 import { PdfViewerComponent } from './pdf-viewer.component';
@@ -56,16 +57,16 @@ export class AnnotatorComponent {
     const editingId = this.store.editingId();
     return this.store
       .annotations()
-      .filter(a => a.comment || a.id === selectedId || a.id === editingId);
+      .filter((a) => a.comment || a.id === selectedId || a.id === editingId);
   });
   protected readonly commentCount = computed(
-    () => this.store.annotations().filter(a => a.comment).length,
+    () => this.store.annotations().filter((a) => a.comment).length,
   );
   protected readonly visibleAnnotations = computed(() => {
     const term = this.search().trim().toLowerCase();
     const listed = this.listedAnnotations();
     return term
-      ? listed.filter(a => (a.quote + ' ' + a.comment).toLowerCase().includes(term))
+      ? listed.filter((a) => (a.quote + ' ' + a.comment).toLowerCase().includes(term))
       : listed;
   });
 
@@ -74,8 +75,8 @@ export class AnnotatorComponent {
     const current = this.scale();
     const next =
       direction === 1
-        ? ZOOM_STEPS.find(step => step > current + 0.001)
-        : [...ZOOM_STEPS].reverse().find(step => step < current - 0.001);
+        ? ZOOM_STEPS.find((step) => step > current + 0.001)
+        : [...ZOOM_STEPS].reverse().find((step) => step < current - 0.001);
     if (next !== undefined) this.scale.set(next);
   }
 
@@ -124,7 +125,9 @@ export class AnnotatorComponent {
   }
 
   protected setSidebarWidth(width: number): void {
-    const clamped = Math.round(Math.min(Math.max(width, SIDEBAR_MIN_WIDTH), this.sidebarMaxWidth()));
+    const clamped = Math.round(
+      Math.min(Math.max(width, SIDEBAR_MIN_WIDTH), this.sidebarMaxWidth()),
+    );
     this.sidebarWidth.set(clamped);
     try {
       localStorage.setItem(SIDEBAR_WIDTH_KEY, String(clamped));
@@ -168,7 +171,7 @@ export class AnnotatorComponent {
     const ctrl = event.ctrlKey || event.metaKey;
     if (ctrl && event.key.toLowerCase() === 's') {
       event.preventDefault();
-      this.store.save();
+      void this.store.save();
     } else if (ctrl && this.store.document() && ['+', '=', '-', '0'].includes(event.key)) {
       // Replaces the browser zoom, which would also shrink the toolbar and sidebar.
       event.preventDefault();
