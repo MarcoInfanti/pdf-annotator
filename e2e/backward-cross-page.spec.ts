@@ -14,7 +14,7 @@ import type { Point } from './fixtures/pdf-page-helpers';
 test.beforeEach(({ page }) => openFixture(page));
 
 async function highlightQuote(page: Page): Promise<string> {
-  await highlightWith(page, 'Amarillo');
+  await highlightWith(page, 'yellow');
   return quoteText(page);
 }
 

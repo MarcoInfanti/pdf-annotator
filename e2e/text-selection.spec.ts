@@ -16,7 +16,7 @@ test.beforeEach(({ page }) => openFixture(page));
 
 async function dragAndHighlight(page: Page, from: Point, to: Point, via?: Point): Promise<string> {
   await drag(page, from, to, via);
-  await highlightWith(page, 'Amarillo');
+  await highlightWith(page, 'yellow');
   return quoteText(page);
 }
 
@@ -85,7 +85,7 @@ test('click behaviour is preserved', async ({ page }) => {
   const pageBox = await boxOf(pageAt(page, 0));
   const echo = await boxOf(lineSpan(pageAt(page, 0), 'ECHO'));
   await page.mouse.click(pageBox.x + pageBox.width - 10, echo.y + echo.height + 15);
-  await expect(page.getByRole('toolbar', { name: 'Subrayar selección' })).toBeHidden();
+  await expect(page.getByTestId('highlight-popup')).toBeHidden();
   await expect(selected).toHaveCount(0);
   const first = await centreOf(pageAt(page, 0).locator('.pdf-page__highlight').first());
   await page.mouse.click(first.x, first.y);
@@ -95,5 +95,5 @@ test('click behaviour is preserved', async ({ page }) => {
 test('a plain click on text opens no popup', async ({ page }) => {
   const point = await centreOf(lineSpan(pageAt(page, 0), 'CHARLIE'));
   await page.mouse.click(point.x, point.y);
-  await expect(page.getByRole('toolbar', { name: 'Subrayar selección' })).toBeHidden();
+  await expect(page.getByTestId('highlight-popup')).toBeHidden();
 });

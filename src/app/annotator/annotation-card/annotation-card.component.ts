@@ -26,6 +26,7 @@ import { MarkdownPipe } from '../markdown/markdown.pipe';
     class: 'annotation-card',
     '[class.annotation-card--selected]': 'selected()',
     '[style.--accent]': 'annotation().color',
+    '[attr.data-testid]': '"annotation-card-" + annotation().id',
   },
 })
 export class AnnotationCardComponent {

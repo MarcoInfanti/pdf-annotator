@@ -2,6 +2,7 @@
   <button
     type="button"
     class="annotation-card__page"
+    data-testid="annotation-card-page"
     (click)="focusRequested.emit()"
     [attr.aria-label]="'Ir a la página ' + annotation().page"
   >
@@ -17,6 +18,7 @@
         [style.background-color]="color.value"
         [attr.aria-checked]="color.value === annotation().color"
         [attr.aria-label]="color.label"
+        [attr.data-testid]="'annotation-card-swatch-' + color.id"
         [title]="color.label"
         (click)="colorChanged.emit(color.value)"
       ></button>
@@ -27,6 +29,7 @@
     <button
       type="button"
       class="icon-button"
+      data-testid="annotation-card-edit"
       title="Editar comentario"
       aria-label="Editar comentario"
       (click)="editRequested.emit()"
@@ -37,6 +40,7 @@
   <button
     type="button"
     class="icon-button icon-button--danger"
+    data-testid="annotation-card-delete"
     title="Eliminar"
     aria-label="Eliminar anotación"
     (click)="deleteRequested.emit()"
@@ -46,23 +50,41 @@
 </header>
 
 <blockquote class="annotation-card__quote">
-  <button type="button" class="annotation-card__quote-button" (click)="focusRequested.emit()">
+  <button
+    type="button"
+    class="annotation-card__quote-button"
+    data-testid="annotation-card-quote"
+    (click)="focusRequested.emit()"
+  >
     {{ annotation().quote }}
   </button>
 </blockquote>
 
 @if (editing()) {
   <div class="annotation-card__tabs" role="tablist">
-    <button type="button" role="tab" [attr.aria-selected]="!preview()" (click)="preview.set(false)">
+    <button
+      type="button"
+      role="tab"
+      data-testid="annotation-card-tab-write"
+      [attr.aria-selected]="!preview()"
+      (click)="preview.set(false)"
+    >
       Escribir
     </button>
-    <button type="button" role="tab" [attr.aria-selected]="preview()" (click)="preview.set(true)">
+    <button
+      type="button"
+      role="tab"
+      data-testid="annotation-card-tab-preview"
+      [attr.aria-selected]="preview()"
+      (click)="preview.set(true)"
+    >
       Vista previa
     </button>
     @if (!preview()) {
       <button
         type="button"
         class="annotation-card__insert"
+        data-testid="annotation-card-insert-table"
         title="Insertar una tabla de ejemplo"
         (click)="insertTable()"
       >
@@ -73,12 +95,14 @@
   @if (preview()) {
     <div
       class="markdown annotation-card__preview"
+      data-testid="annotation-card-preview"
       [innerHTML]="comment.value || '_Sin comentario_' | markdown"
     ></div>
   } @else {
     <textarea
       #textarea
       class="annotation-card__editor"
+      data-testid="annotation-card-editor"
       rows="6"
       aria-label="Comentario en Markdown"
       placeholder="Escribe tu nota en Markdown: **negrita**, *cursiva*, listas, `código`…"
@@ -87,14 +111,39 @@
     ></textarea>
   }
   <footer class="annotation-card__actions">
-    <span class="annotation-card__hint">Ctrl+Enter para guardar</span>
-    <button type="button" class="button" (click)="editCancelled.emit()">Cancelar</button>
-    <button type="button" class="button button--primary" (click)="save()">Guardar</button>
+    <span class="annotation-card__hint" data-testid="annotation-card-hint"
+      >Ctrl+Enter para guardar</span
+    >
+    <button
+      type="button"
+      class="button"
+      data-testid="annotation-card-cancel"
+      (click)="editCancelled.emit()"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="button button--primary"
+      data-testid="annotation-card-save"
+      (click)="save()"
+    >
+      Guardar
+    </button>
   </footer>
 } @else if (annotation().comment) {
-  <div class="markdown" [innerHTML]="annotation().comment | markdown"></div>
+  <div
+    class="markdown"
+    data-testid="annotation-card-comment"
+    [innerHTML]="annotation().comment | markdown"
+  ></div>
 } @else {
-  <button type="button" class="annotation-card__add" (click)="editRequested.emit()">
+  <button
+    type="button"
+    class="annotation-card__add"
+    data-testid="annotation-card-add-comment"
+    (click)="editRequested.emit()"
+  >
     + Añadir comentario
   </button>
 }

@@ -49,10 +49,10 @@ async function dragPath(page: Page, from: Point, ...path: Point[]): Promise<void
   await page.mouse.up();
 }
 
-const popup = (page: Page): Locator => page.getByRole('toolbar', { name: 'Subrayar selección' });
+const popup = (page: Page): Locator => page.getByTestId('highlight-popup');
 
 async function highlight(page: Page): Promise<string> {
-  await highlightWith(page, 'Amarillo');
+  await highlightWith(page, 'yellow');
   return quoteText(page);
 }
 
@@ -318,7 +318,7 @@ test.describe('marker lifecycle', () => {
       { x: l.alpha.x + 10, y: mid(l.alpha) },
       { x: l.bravo.x + 50, y: mid(l.bravo) },
     );
-    await page.getByRole('button', { name: 'Acercar' }).click();
+    await page.getByTestId('annotator-toolbar-zoom-in').click();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
     await expect(page.locator('.textLayer.selecting')).toHaveCount(0);
   });
@@ -340,7 +340,7 @@ test.describe('marker lifecycle', () => {
 
   test('a drag after a zoom still stops at the dragged lines', async ({ page }) => {
     const widthBefore = (await boxOf(lineSpan(pageAt(page, 0), 'BRAVO'))).width;
-    await page.getByRole('button', { name: 'Acercar' }).click();
+    await page.getByTestId('annotator-toolbar-zoom-in').click();
     await expect
       .poll(async () => (await lineSpan(pageAt(page, 0), 'BRAVO').boundingBox())?.width ?? 0)
       .toBeGreaterThan(widthBefore * 1.05);
@@ -367,7 +367,7 @@ test.describe('marker lifecycle', () => {
       { x: l.bravo.x + 50, y: mid(l.bravo) },
     );
     await highlight(page);
-    await page.getByRole('button', { name: 'Abrir PDF' }).first().click();
+    await page.getByTestId('annotator-toolbar-open').click();
     await expect(page.locator('.pdf-page__highlight')).toHaveCount(0);
     await expect(lineSpan(pageAt(page, 0), 'BRAVO')).toBeVisible();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
@@ -379,7 +379,7 @@ test.describe('marker lifecycle', () => {
     );
     await expect(popup(page)).toHaveCount(1);
     await highlight(page);
-    await expect(page.locator('blockquote.annotation-card__quote')).toHaveCount(1);
+    await expect(page.getByTestId('annotation-card-quote')).toHaveCount(1);
     await expect(page.locator('.textLayer.selecting')).toHaveCount(0);
   });
 });
@@ -404,7 +404,7 @@ test.describe('regressions', () => {
     );
     await highlight(page);
     const before = await highlightBoxes(page);
-    await page.getByRole('button', { name: 'Acercar' }).click();
+    await page.getByTestId('annotator-toolbar-zoom-in').click();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
     const bravo = await boxOf(lineSpan(pageAt(page, 0), 'BRAVO'));
     await expect

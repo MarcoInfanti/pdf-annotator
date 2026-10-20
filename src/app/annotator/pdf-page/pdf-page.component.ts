@@ -34,6 +34,7 @@ import { appendEndOfContent, selectionInLayer } from '../text-selection/text-sel
       @for (box of boxes(); track $index) {
         <div
           class="pdf-page__highlight"
+          [attr.data-testid]="'pdf-page-highlight-' + box.id"
           [class.pdf-page__highlight--selected]="box.id === selectedId()"
           [style.left.px]="box.left"
           [style.top.px]="box.top"
@@ -79,6 +80,7 @@ import { appendEndOfContent, selectionInLayer } from '../text-selection/text-sel
   `,
   host: {
     role: 'group',
+    '[attr.data-testid]': '"pdf-page-" + page().pageNumber',
     '[attr.aria-label]': '"Página " + page().pageNumber',
     '[style.width.px]': 'viewport().width',
     '[style.height.px]': 'viewport().height',

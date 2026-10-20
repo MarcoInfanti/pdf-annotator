@@ -26,13 +26,13 @@ export async function openFixture(page: Page): Promise<void> {
     });
   }, base64);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Abrir PDF' }).first().click();
+  await page.getByTestId('annotator-toolbar-open').click();
   await expect(lineSpan(pageAt(page, 0), 'ALPHA')).toBeVisible();
   await expect(lineSpan(pageAt(page, 1), 'FOXTROT')).toBeVisible();
 }
 
 export function pageAt(page: Page, index: number): Locator {
-  return page.locator('app-pdf-page').nth(index);
+  return page.getByTestId(`pdf-page-${index + 1}`);
 }
 
 export function lineSpan(pdfPage: Locator, sentinel: string): Locator {
@@ -59,14 +59,15 @@ export async function drag(page: Page, from: Point, to: Point, via?: Point): Pro
   await page.mouse.up();
 }
 
-export async function highlightWith(page: Page, color: string): Promise<void> {
-  await page
-    .getByRole('toolbar', { name: 'Subrayar selección' })
-    .getByRole('button', { name: `Subrayar en ${color}` })
-    .click();
+/** Colour ids offered by the highlight popup (the `id` of each colour in the app). */
+export type HighlightColorId = 'yellow' | 'green' | 'blue' | 'pink';
+
+/** Picks `color` in the open highlight popup. */
+export async function highlightWith(page: Page, color: HighlightColorId): Promise<void> {
+  await page.getByTestId('highlight-popup').getByTestId(`highlight-popup-color-${color}`).click();
 }
 
 /** Text of the first annotation card quote in the side list. */
 export function quoteText(page: Page): Promise<string> {
-  return page.locator('blockquote.annotation-card__quote').first().innerText();
+  return page.getByTestId('annotation-card-quote').first().innerText();
 }

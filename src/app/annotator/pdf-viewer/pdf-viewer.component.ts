@@ -30,9 +30,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (error(); as message) {
-      <p class="pdf-viewer__status" role="alert">{{ message }}</p>
+      <p class="pdf-viewer__status" role="alert" data-testid="pdf-viewer-error">{{ message }}</p>
     } @else if (!pages().length) {
-      <p class="pdf-viewer__status">Cargando PDF…</p>
+      <p class="pdf-viewer__status" data-testid="pdf-viewer-loading">Cargando PDF…</p>
     }
     @for (page of pages(); track page) {
       <app-pdf-page
