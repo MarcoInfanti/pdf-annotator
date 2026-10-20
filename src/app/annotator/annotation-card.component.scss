@@ -1,0 +1,126 @@
+:host {
+  display: block;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+:host(.annotation-card--selected) {
+  border-color: var(--primary);
+  border-left-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+.annotation-card__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.annotation-card__page {
+  margin-right: auto;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.annotation-card__colors {
+  display: flex;
+  gap: 4px;
+}
+
+.annotation-card__swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+
+  &[aria-checked='true'] {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+  }
+}
+
+.annotation-card__quote {
+  margin: 10px 0;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.annotation-card__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+
+  button {
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &[aria-selected='true'] {
+      background: var(--chip-bg);
+      color: var(--text);
+      font-weight: 600;
+    }
+  }
+
+  .annotation-card__insert {
+    margin-left: auto;
+  }
+}
+
+.annotation-card__editor {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.5 ui-monospace, Consolas, monospace;
+  resize: vertical;
+}
+
+.annotation-card__preview {
+  min-height: 80px;
+}
+
+.annotation-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.annotation-card__hint {
+  margin-right: auto;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.annotation-card__add {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  cursor: pointer;
+}

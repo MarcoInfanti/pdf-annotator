@@ -1,0 +1,64 @@
+<header class="annotation-card__header">
+  <button
+    type="button"
+    class="annotation-card__page"
+    (click)="focusRequested.emit()"
+    [attr.aria-label]="'Ir a la página ' + annotation().page"
+  >
+    Pág. {{ annotation().page }}
+  </button>
+
+  <div class="annotation-card__colors" role="radiogroup" aria-label="Color del subrayado">
+    @for (color of colors; track color.value) {
+      <button
+        type="button"
+        role="radio"
+        class="annotation-card__swatch"
+        [style.background-color]="color.value"
+        [attr.aria-checked]="color.value === annotation().color"
+        [attr.aria-label]="color.label"
+        [title]="color.label"
+        (click)="colorChanged.emit(color.value)"
+      ></button>
+    }
+  </div>
+
+  @if (!editing()) {
+    <button type="button" class="icon-button" title="Editar comentario" aria-label="Editar comentario" (click)="editRequested.emit()">✎</button>
+  }
+  <button type="button" class="icon-button icon-button--danger" title="Eliminar" aria-label="Eliminar anotación" (click)="deleteRequested.emit()">🗑</button>
+</header>
+
+<blockquote class="annotation-card__quote" (click)="focusRequested.emit()">{{ annotation().quote }}</blockquote>
+
+@if (editing()) {
+  <div class="annotation-card__tabs" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="!preview()" (click)="preview.set(false)">Escribir</button>
+    <button type="button" role="tab" [attr.aria-selected]="preview()" (click)="preview.set(true)">Vista previa</button>
+    @if (!preview()) {
+      <button type="button" class="annotation-card__insert" title="Insertar una tabla de ejemplo" (click)="insertTable()">⊞ Tabla</button>
+    }
+  </div>
+  @if (preview()) {
+    <div class="markdown annotation-card__preview" [innerHTML]="comment.value || '_Sin comentario_' | markdown"></div>
+  } @else {
+    <textarea
+      #textarea
+      class="annotation-card__editor"
+      rows="6"
+      aria-label="Comentario en Markdown"
+      placeholder="Escribe tu nota en Markdown: **negrita**, *cursiva*, listas, `código`…"
+      [formControl]="comment"
+      (keydown)="handleEditorKeys($event)"
+    ></textarea>
+  }
+  <footer class="annotation-card__actions">
+    <span class="annotation-card__hint">Ctrl+Enter para guardar</span>
+    <button type="button" class="button" (click)="editCancelled.emit()">Cancelar</button>
+    <button type="button" class="button button--primary" (click)="save()">Guardar</button>
+  </footer>
+} @else if (annotation().comment) {
+  <div class="markdown" [innerHTML]="annotation().comment | markdown"></div>
+} @else {
+  <button type="button" class="annotation-card__add" (click)="editRequested.emit()">+ Añadir comentario</button>
+}

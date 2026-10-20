@@ -1,0 +1,172 @@
+<header class="toolbar">
+  <button type="button" class="button button--primary" (click)="store.open()" [disabled]="store.busy()">
+    Abrir PDF
+  </button>
+
+  @if (store.document(); as doc) {
+    <button
+      type="button"
+      class="button"
+      (click)="store.save()"
+      [disabled]="store.busy()"
+      [title]="store.canOverwrite() ? 'Guarda las anotaciones dentro del mismo PDF (Ctrl+S)' : 'Descarga el PDF con las anotaciones (Ctrl+S)'"
+    >
+      Guardar
+    </button>
+    @if (!doc.encrypted) {
+      <button type="button" class="button" (click)="store.saveCopy()" [disabled]="store.busy()">
+        Descargar copia
+      </button>
+    }
+    <span class="toolbar__separator"></span>
+    <button type="button" class="button" (click)="store.exportJson()">Exportar JSON</button>
+    <button type="button" class="button" (click)="store.importJson()">Importar JSON</button>
+
+    <span class="toolbar__file" [title]="doc.name">
+      {{ doc.name }}
+      @if (store.dirty()) {
+        <span class="toolbar__dirty" title="Cambios sin guardar">● sin guardar</span>
+      }
+    </span>
+
+    <div class="toolbar__modes" role="group" aria-label="Modo de lectura">
+      @for (mode of readingModes; track mode.value) {
+        <button
+          type="button"
+          class="toolbar__mode"
+          [attr.aria-pressed]="readingMode.mode() === mode.value"
+          [title]="'Modo de lectura: ' + mode.label"
+          (click)="readingMode.set(mode.value)"
+        >
+          <span aria-hidden="true">{{ mode.icon }}</span> {{ mode.label }}
+        </button>
+      }
+    </div>
+
+    <div class="toolbar__zoom" role="group" aria-label="Zoom">
+      <button type="button" class="icon-button" aria-label="Alejar" title="Alejar (Ctrl −)" (click)="zoom(-1)">−</button>
+      <select class="toolbar__zoom-select" aria-label="Nivel de zoom" (change)="changeZoom($event)">
+        @if (!zoomSteps.includes(scale())) {
+          <option [value]="scale()" selected>{{ zoomPercent() }}%</option>
+        }
+        @for (step of zoomSteps; track step) {
+          <option [value]="step" [selected]="step === scale()">{{ step * 100 | number: '1.0-0' }}%</option>
+        }
+        <option value="fit">Ajustar al ancho</option>
+      </select>
+      <button type="button" class="icon-button" aria-label="Acercar" title="Acercar (Ctrl +)" (click)="zoom(1)">+</button>
+      <button type="button" class="button" title="Ajustar al ancho" (click)="fitWidth()">↔ Ancho</button>
+    </div>
+  }
+</header>
+
+@if (store.notice(); as notice) {
+  <div class="notice" role="status">
+    {{ notice }}
+    <button type="button" class="icon-button" aria-label="Cerrar aviso" (click)="store.dismissNotice()">×</button>
+  </div>
+}
+
+@if (store.document(); as doc) {
+  <main class="workspace">
+    <app-pdf-viewer
+      class="workspace__viewer"
+      [data]="doc.cleanBytes"
+      [scale]="scale()"
+      [annotations]="store.annotations()"
+      [selectedId]="store.selectedId()"
+      (textSelected)="pendingSelection.set($event)"
+      (annotationClicked)="selectFromPdf($event)"
+      (zoomRequested)="zoom($event)"
+      (scroll)="pendingSelection.set(null)"
+    />
+
+    <div
+      class="workspace__resizer"
+      [class.workspace__resizer--active]="resizing()"
+      role="separator"
+      tabindex="0"
+      aria-orientation="vertical"
+      aria-label="Ancho del panel de comentarios"
+      title="Arrastra para cambiar el ancho · doble clic para restablecer"
+      [attr.aria-valuenow]="sidebarWidth()"
+      [attr.aria-valuemin]="sidebarMinWidth"
+      [attr.aria-valuemax]="sidebarMaxWidth()"
+      (pointerdown)="startResize($event)"
+      (pointermove)="resize($event)"
+      (pointerup)="stopResize($event)"
+      (keydown)="resizeWithKeys($event)"
+      (dblclick)="resetSidebarWidth()"
+    ></div>
+
+    <aside class="sidebar" aria-label="Anotaciones" [style.width.px]="sidebarWidth()">
+      <div class="sidebar__header">
+        <h2>Comentarios <span class="sidebar__count">{{ commentCount() }}</span></h2>
+        <input
+          type="search"
+          class="sidebar__search"
+          placeholder="Buscar en anotaciones…"
+          aria-label="Buscar en anotaciones"
+          (input)="updateSearch($event)"
+        />
+      </div>
+      <div class="sidebar__list">
+        @for (annotation of visibleAnnotations(); track annotation.id) {
+          <app-annotation-card
+            [annotation]="annotation"
+            [selected]="annotation.id === store.selectedId()"
+            [editing]="annotation.id === store.editingId()"
+            (focusRequested)="focus(annotation)"
+            (editRequested)="store.startEditing(annotation.id)"
+            (commentSaved)="store.updateComment(annotation.id, $event)"
+            (editCancelled)="store.stopEditing()"
+            (deleteRequested)="remove(annotation)"
+            (colorChanged)="store.changeColor(annotation.id, $event)"
+          />
+        } @empty {
+          <p class="sidebar__empty">
+            @if (search()) {
+              Ningún comentario coincide con la búsqueda.
+            } @else {
+              Selecciona texto en el PDF y elige un color para subrayarlo y comentarlo.
+              Haz clic en un subrayado para comentarlo, cambiarle el color o eliminarlo.
+            }
+          </p>
+        }
+      </div>
+    </aside>
+  </main>
+} @else {
+  <main class="empty-state">
+    <h1>Anotador de PDF</h1>
+    <p>Abre un PDF, subraya texto y añade notas en Markdown.</p>
+    <p>
+      Las anotaciones se guardan <strong>dentro del propio PDF</strong>, así que al volver a abrirlo
+      aparecerán de nuevo. También se ven como comentarios en otros lectores (Acrobat, Edge…).
+    </p>
+    <button type="button" class="button button--primary button--large" (click)="store.open()">Abrir PDF</button>
+  </main>
+}
+
+@if (pendingSelection(); as selection) {
+  <div
+    #popup
+    class="highlight-popup"
+    role="toolbar"
+    aria-label="Subrayar selección"
+    [style.left.px]="selection.clientX"
+    [style.top.px]="selection.clientY + 12"
+  >
+    <span>Subrayar</span>
+    @for (color of colors; track color.value) {
+      <button
+        type="button"
+        class="highlight-popup__color"
+        [style.background-color]="color.value"
+        [attr.aria-label]="'Subrayar en ' + color.label"
+        [title]="color.label"
+        (click)="highlight(color.value)"
+      ></button>
+    }
+  </div>
+}

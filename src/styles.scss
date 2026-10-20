@@ -1,0 +1,204 @@
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --viewer-bg: #e3e5e8;
+  --border: #d5d8dd;
+  --text: #1f2328;
+  --text-muted: #5b636e;
+  --primary: #3858d6;
+  --primary-text: #ffffff;
+  --danger: #c62828;
+  --warning: #b26a00;
+  --chip-bg: #eceef2;
+  --notice-bg: #fff4d6;
+  --popup-bg: #2b2f36;
+  --popup-text: #ffffff;
+  color-scheme: light dark;
+}
+
+@mixin dark-tokens {
+  --bg: #17191d;
+  --surface: #1f2228;
+  --viewer-bg: #2a2d33;
+  --border: #393d45;
+  --text: #e6e8eb;
+  --text-muted: #a0a7b2;
+  --primary: #7d97ff;
+  --primary-text: #10131a;
+  --danger: #ff7b72;
+  --warning: #f0b450;
+  --chip-bg: #2d3139;
+  --notice-bg: #3d3420;
+  --popup-bg: #454b55;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include dark-tokens;
+  }
+}
+
+// Reading modes (ReadingModeService). --page-filter tints the rendered PDF pages.
+:root[data-theme='dark'] {
+  @include dark-tokens;
+  --viewer-bg: #111316;
+  --page-filter: invert(0.88) hue-rotate(180deg) contrast(0.95);
+}
+
+:root[data-theme='sepia'] {
+  --bg: #f1e7d0;
+  --surface: #f8f0dc;
+  --viewer-bg: #d9ccae;
+  --border: #d2c3a0;
+  --text: #3b2f1e;
+  --text-muted: #6b5a40;
+  --primary: #8a5a1c;
+  --primary-text: #fff8e8;
+  --danger: #a33a1f;
+  --warning: #8a5a00;
+  --chip-bg: #e8dbbd;
+  --notice-bg: #ecd9a8;
+  --popup-bg: #4a3b26;
+  --page-filter: sepia(0.6) brightness(0.92) contrast(0.95);
+  color-scheme: light;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.button--primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.button--large {
+  padding: 10px 24px;
+  font-size: 16px;
+}
+
+.icon-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--chip-bg);
+  }
+}
+
+.icon-button--danger:hover {
+  color: var(--danger);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.markdown {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  code {
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: var(--chip-bg);
+    font-size: 0.9em;
+  }
+
+  pre {
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--chip-bg);
+    overflow: auto;
+
+    code {
+      padding: 0;
+    }
+  }
+
+  blockquote {
+    margin: 0;
+    padding-left: 10px;
+    border-left: 3px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  a {
+    color: var(--primary);
+  }
+
+  // display: block lets a wide table scroll inside the sidebar instead of overflowing it.
+  table {
+    display: block;
+    max-width: 100%;
+    margin: 8px 0;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--chip-bg);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  // Leaves the alignment set with :--: in the Markdown to the cell's align attribute.
+  th:not([align]),
+  td:not([align]) {
+    text-align: left;
+  }
+
+  tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--chip-bg) 50%, transparent);
+  }
+}
