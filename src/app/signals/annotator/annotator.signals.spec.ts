@@ -110,9 +110,7 @@ describe('AnnotatorSignals', () => {
     it('sets a notice for an encrypted PDF', async () => {
       await openDocument({ encrypted: true });
 
-      expect(store.notice()).toBe(
-        'Este PDF está protegido: las anotaciones se guardarán en un archivo .json aparte.',
-      );
+      expect(store.notice()).toEqual({ key: 'NOTICE.ENCRYPTED' });
     });
 
     it('never calls confirm, even when dirty: the component asks first', async () => {
@@ -135,7 +133,7 @@ describe('AnnotatorSignals', () => {
       await store.save();
 
       expect(files.overwrite).toHaveBeenCalledWith(handle, ENCODED);
-      expect(store.notice()).toBe('Guardado en book.pdf');
+      expect(store.notice()).toEqual({ key: 'NOTICE.SAVED_IN', params: { name: 'book.pdf' } });
       expect(store.dirty()).toBeFalse();
     });
 
@@ -146,6 +144,7 @@ describe('AnnotatorSignals', () => {
       await store.save();
 
       expect(files.download).toHaveBeenCalledWith(ENCODED, 'book.pdf', 'application/pdf');
+      expect(store.notice()).toEqual({ key: 'NOTICE.DOWNLOADED' });
       expect(store.dirty()).toBeFalse();
     });
 
@@ -404,8 +403,27 @@ describe('AnnotatorSignals', () => {
 
       await store.open();
 
-      expect(store.notice()).toBe('Error: boom');
+      expect(store.notice()).toEqual({ key: 'NOTICE.ERROR', params: { message: 'boom' } });
       expect(store.busy()).toBeFalse();
+    });
+
+    it('keeps the key of a translatable error as the notice', async () => {
+      spyOn(console, 'error');
+      files.pickText.and.resolveTo('{"version":2}');
+      await openDocument();
+
+      await store.importJson();
+
+      expect(store.notice()).toEqual({ key: 'ERRORS.UNRECOGNIZED_FORMAT' });
+    });
+
+    it('describes a non-Error failure by its text', async () => {
+      spyOn(console, 'error');
+      files.pickPdf.and.rejectWith('plain text');
+
+      await store.open();
+
+      expect(store.notice()).toEqual({ key: 'NOTICE.ERROR', params: { message: 'plain text' } });
     });
   });
 });

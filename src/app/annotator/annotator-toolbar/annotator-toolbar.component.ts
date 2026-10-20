@@ -1,7 +1,9 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { READING_MODES, ReadingModeService } from '../../services/layout/reading-mode.service';
 import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
+import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 
 /**
  * The top bar: open, save, export/import, reading mode and zoom. It talks to the store provided
@@ -9,7 +11,7 @@ import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
  */
 @Component({
   selector: 'app-annotator-toolbar',
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, LanguageSwitcherComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './annotator-toolbar.component.html',
   styleUrl: './annotator-toolbar.component.scss',

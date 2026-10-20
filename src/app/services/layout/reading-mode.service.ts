@@ -4,9 +4,9 @@ import type { ReadingMode, ReadingModeOption } from '../../models/layout.model';
 
 /** Modes offered in the toolbar, in display order. */
 export const READING_MODES: ReadingModeOption[] = [
-  { value: 'normal', label: 'Normal', icon: '☀' },
-  { value: 'sepia', label: 'Sepia', icon: '☕' },
-  { value: 'night', label: 'Noche', icon: '☾' },
+  { value: 'normal', labelKey: 'READING_MODE.NORMAL', icon: '☀' },
+  { value: 'sepia', labelKey: 'READING_MODE.SEPIA', icon: '☕' },
+  { value: 'night', labelKey: 'READING_MODE.NIGHT', icon: '☾' },
 ];
 
 const STORAGE_KEY = 'pdf-annotations.reading-mode';

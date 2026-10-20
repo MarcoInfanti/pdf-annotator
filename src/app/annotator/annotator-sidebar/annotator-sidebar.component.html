@@ -1,13 +1,13 @@
 <app-sidebar-resizer />
 <aside
   class="sidebar"
-  aria-label="Anotaciones"
+  [attr.aria-label]="'SIDEBAR.LABEL' | translate"
   [style.width.px]="sidebarWidth.width()"
   data-testid="annotator-sidebar"
 >
   <div class="sidebar__header">
     <h2>
-      Comentarios
+      {{ 'SIDEBAR.TITLE' | translate }}
       <span class="sidebar__count" data-testid="annotator-sidebar-count">{{
         store.commentCount()
       }}</span>
@@ -16,8 +16,8 @@
       type="search"
       class="sidebar__search"
       data-testid="annotator-sidebar-search"
-      placeholder="Buscar en anotaciones…"
-      aria-label="Buscar en anotaciones"
+      [attr.placeholder]="'SIDEBAR.SEARCH_PLACEHOLDER' | translate"
+      [attr.aria-label]="'SIDEBAR.SEARCH_LABEL' | translate"
       (input)="changeSearch($event)"
     />
   </div>
@@ -37,10 +37,9 @@
     } @empty {
       <p class="sidebar__empty" data-testid="annotator-sidebar-empty">
         @if (store.search()) {
-          Ningún comentario coincide con la búsqueda.
+          {{ 'SIDEBAR.NO_MATCH' | translate }}
         } @else {
-          Selecciona texto en el PDF y elige un color para subrayarlo y comentarlo. Haz clic en un
-          subrayado para comentarlo, cambiarle el color o eliminarlo.
+          {{ 'SIDEBAR.EMPTY_HINT' | translate }}
         }
       </p>
     }

@@ -1,6 +1,11 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import type { Annotation, TextSelection } from '../../models/annotator.model';
 import { FileAccessService } from '../../services/annotator/file-access.service';
@@ -8,6 +13,7 @@ import { PdfAnnotationCodecService } from '../../services/annotator/pdf-annotati
 import { SidebarWidthService } from '../../services/layout/sidebar-width.service';
 import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
 import { AnnotationCardComponent } from '../annotation-card/annotation-card.component';
+import { missingTranslationKeys } from '../testing/translation-keys/translation-keys';
 import { AnnotatorSidebarComponent } from './annotator-sidebar.component';
 
 function selection(top: number): TextSelection {
@@ -42,6 +48,7 @@ describe('AnnotatorSidebarComponent', () => {
       imports: [AnnotatorSidebarComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideTranslateService({ loader: provideTranslateLoader(TranslateNoOpLoader) }),
         AnnotatorSignals,
         { provide: FileAccessService, useValue: {} },
         { provide: PdfAnnotationCodecService, useValue: {} },
@@ -87,6 +94,7 @@ describe('AnnotatorSidebarComponent', () => {
     cards()[0].deleteRequested.emit();
     expect(store.annotations().length).toBe(1);
 
+    expect(confirmSpy).toHaveBeenCalledWith('CONFIRM.DELETE_ANNOTATION');
     confirmSpy.and.returnValue(true);
     cards()[0].deleteRequested.emit();
     expect(store.annotations().length).toBe(0);
@@ -126,5 +134,19 @@ describe('AnnotatorSidebarComponent', () => {
     fixture.detectChanges();
 
     expect(byTestId('annotator-sidebar')?.style.width).toBe('450px');
+  });
+
+  it('only uses translation keys that exist in both bundles', () => {
+    const keys = [
+      'SIDEBAR.LABEL',
+      'SIDEBAR.TITLE',
+      'SIDEBAR.SEARCH_PLACEHOLDER',
+      'SIDEBAR.SEARCH_LABEL',
+      'SIDEBAR.NO_MATCH',
+      'SIDEBAR.EMPTY_HINT',
+      'CONFIRM.DELETE_ANNOTATION',
+    ];
+
+    expect(missingTranslationKeys(keys)).toEqual([]);
   });
 });

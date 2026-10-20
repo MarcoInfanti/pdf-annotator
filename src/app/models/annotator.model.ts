@@ -48,8 +48,8 @@ export interface HighlightColor {
   id: HighlightColorId;
   /** What gets stored on the annotation, as `#rrggbb`. */
   value: string;
-  /** Name shown to the user. */
-  label: string;
+  /** Translation key of the colour name. */
+  labelKey: string;
 }
 
 /** The PDF currently open. */
@@ -87,6 +87,14 @@ export interface FilePickerOptions {
 export type FilePickerWindow = Window & {
   showOpenFilePicker?: (options: FilePickerOptions) => Promise<FileSystemFileHandle[]>;
 };
+
+/** A message for the notice bar, translated in the template so it follows language switches. */
+export interface Notice {
+  /** Translation key. */
+  key: string;
+  /** Values for the `{{name}}` placeholders of the message. */
+  params?: Record<string, string | number>;
+}
 
 /** Axis-aligned rectangle in page-relative CSS pixels. */
 export interface Box {

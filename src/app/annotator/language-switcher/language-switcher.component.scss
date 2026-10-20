@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+
+.language-switcher {
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.language-switcher__option {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+
+  &[aria-pressed='true'] {
+    background: var(--chip-bg);
+    color: var(--text);
+    font-weight: 600;
+  }
+}

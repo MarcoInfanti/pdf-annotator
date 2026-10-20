@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import type {
+  Notice,
   Annotation,
   DecodedPdf,
   OpenDocument,
@@ -7,6 +8,7 @@ import type {
   TextSelection,
 } from '../../models/annotator.model';
 import { HIGHLIGHT_COLORS } from '../../annotator/annotator.data';
+import { TranslatableError } from '../../annotator/translatable-error/translatable-error';
 import {
   parseAnnotationFile,
   serializeAnnotations,
@@ -41,7 +43,7 @@ export class AnnotatorSignals {
   private readonly _editingId = signal<string | null>(null);
   private readonly _dirty = signal(false);
   private readonly _busy = signal(false);
-  private readonly _notice = signal<string | null>(null);
+  private readonly _notice = signal<Notice | null>(null);
   private readonly _scale = signal(DEFAULT_ZOOM);
   private readonly _search = signal('');
 
@@ -55,7 +57,7 @@ export class AnnotatorSignals {
   readonly dirty = this._dirty.asReadonly();
   /** True while a file operation is running. */
   readonly busy = this._busy.asReadonly();
-  /** Message for the notice bar; null when there is none. */
+  /** Message for the notice bar, as a translation key plus params; null when there is none. */
   readonly notice = this._notice.asReadonly();
   /** Viewer zoom factor (1 is 100%). */
   readonly scale = this._scale.asReadonly();
@@ -109,11 +111,7 @@ export class AnnotatorSignals {
     this._selectedId.set(null);
     this._editingId.set(null);
     this._dirty.set(false);
-    this._notice.set(
-      decoded.encrypted
-        ? 'Este PDF está protegido: las anotaciones se guardarán en un archivo .json aparte.'
-        : null,
-    );
+    this._notice.set(decoded.encrypted ? { key: 'NOTICE.ENCRYPTED' } : null);
   }
 
   /** Saves into the same PDF when possible; otherwise downloads an annotated copy. */
@@ -128,10 +126,10 @@ export class AnnotatorSignals {
       const bytes = await this.codec.encode(doc.cleanBytes, this._annotations());
       if (doc.handle) {
         await this.files.overwrite(doc.handle, bytes);
-        this._notice.set(`Guardado en ${doc.name}`);
+        this._notice.set({ key: 'NOTICE.SAVED_IN', params: { name: doc.name } });
       } else {
         this.files.download(bytes, doc.name, 'application/pdf');
-        this._notice.set('Se ha descargado el PDF con las anotaciones.');
+        this._notice.set({ key: 'NOTICE.DOWNLOADED' });
       }
       this._dirty.set(false);
     });
@@ -259,6 +257,12 @@ export class AnnotatorSignals {
     this._dirty.set(true);
   }
 
+  private errorNotice(error: unknown): Notice {
+    if (error instanceof TranslatableError) return { key: error.key };
+    const message = error instanceof Error ? error.message : String(error);
+    return { key: 'NOTICE.ERROR', params: { message } };
+  }
+
   /** Runs a file operation with busy set; a failure becomes an `Error:` notice instead of throwing. */
   private async run(action: () => Promise<void>): Promise<void> {
     this._busy.set(true);
@@ -266,7 +270,7 @@ export class AnnotatorSignals {
       await action();
     } catch (error) {
       console.error(error);
-      this._notice.set(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      this._notice.set(this.errorNotice(error));
     } finally {
       this._busy.set(false);
     }

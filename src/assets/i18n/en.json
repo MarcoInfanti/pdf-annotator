@@ -1,0 +1,107 @@
+{
+  "APP": {
+    "TITLE": "PDF Annotator"
+  },
+  "LANGUAGE": {
+    "LABEL": "Language",
+    "ES": "Español",
+    "EN": "English",
+    "ES_SHORT": "ES",
+    "EN_SHORT": "EN"
+  },
+  "TOOLBAR": {
+    "OPEN": "Open PDF",
+    "SAVE": "Save",
+    "SAVE_TITLE_OVERWRITE": "Saves the annotations inside the same PDF (Ctrl+S)",
+    "SAVE_TITLE_DOWNLOAD": "Downloads the PDF with the annotations (Ctrl+S)",
+    "SAVE_COPY": "Download copy",
+    "EXPORT_JSON": "Export JSON",
+    "IMPORT_JSON": "Import JSON",
+    "UNSAVED": "unsaved",
+    "UNSAVED_TITLE": "Unsaved changes",
+    "READING_MODE": "Reading mode",
+    "READING_MODE_TITLE": "Reading mode: {{mode}}",
+    "ZOOM": "Zoom",
+    "ZOOM_OUT": "Zoom out",
+    "ZOOM_OUT_TITLE": "Zoom out (Ctrl −)",
+    "ZOOM_IN": "Zoom in",
+    "ZOOM_IN_TITLE": "Zoom in (Ctrl +)",
+    "ZOOM_LEVEL": "Zoom level",
+    "FIT_WIDTH": "Fit to width",
+    "FIT_WIDTH_SHORT": "Width"
+  },
+  "READING_MODE": {
+    "NORMAL": "Normal",
+    "SEPIA": "Sepia",
+    "NIGHT": "Night"
+  },
+  "NOTICE": {
+    "DISMISS": "Dismiss notice",
+    "ENCRYPTED": "This PDF is protected: the annotations will be saved to a separate .json file.",
+    "SAVED_IN": "Saved to {{name}}",
+    "DOWNLOADED": "The PDF with the annotations has been downloaded.",
+    "ERROR": "Error: {{message}}"
+  },
+  "SIDEBAR": {
+    "LABEL": "Annotations",
+    "TITLE": "Comments",
+    "SEARCH_PLACEHOLDER": "Search annotations…",
+    "SEARCH_LABEL": "Search annotations",
+    "NO_MATCH": "No comment matches the search.",
+    "EMPTY_HINT": "Select text in the PDF and pick a colour to highlight and comment on it. Click a highlight to comment on it, change its colour or delete it.",
+    "RESIZER_LABEL": "Comments panel width",
+    "RESIZER_TITLE": "Drag to change the width · double-click to reset"
+  },
+  "POPUP": {
+    "LABEL": "Highlight selection",
+    "HIGHLIGHT": "Highlight",
+    "HIGHLIGHT_IN": "Highlight in {{color}}"
+  },
+  "COLOR": {
+    "YELLOW": "Yellow",
+    "GREEN": "Green",
+    "BLUE": "Blue",
+    "PINK": "Pink"
+  },
+  "CONFIRM": {
+    "DELETE_ANNOTATION": "Delete this annotation?",
+    "DISCARD_CHANGES": "There are unsaved changes. Open another PDF anyway?"
+  },
+  "EMPTY": {
+    "TITLE": "PDF Annotator",
+    "INTRO": "Open a PDF, highlight text and add notes in Markdown.",
+    "STORAGE_BEFORE": "Annotations are saved",
+    "STORAGE_STRONG": "inside the PDF itself",
+    "STORAGE_AFTER": ", so they come back when you reopen it. Other readers (Acrobat, Edge…) show them as comments too."
+  },
+  "ERRORS": {
+    "UNRECOGNIZED_FORMAT": "Error: unrecognised annotation format"
+  },
+  "CARD": {
+    "PAGE": "P. {{page}}",
+    "GO_TO_PAGE": "Go to page {{page}}",
+    "COLOR_GROUP": "Highlight colour",
+    "EDIT": "Edit comment",
+    "DELETE_TITLE": "Delete",
+    "DELETE": "Delete annotation",
+    "WRITE": "Write",
+    "PREVIEW": "Preview",
+    "INSERT_TABLE": "Table",
+    "INSERT_TABLE_TITLE": "Insert a sample table",
+    "NO_COMMENT": "_No comment_",
+    "EDITOR_LABEL": "Markdown comment",
+    "EDITOR_PLACEHOLDER": "Write your note in Markdown: **bold**, *italic*, lists, `code`…",
+    "HINT": "Ctrl+Enter to save",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
+    "ADD_COMMENT": "+ Add comment",
+    "TABLE_COLUMN_1": "Column 1",
+    "TABLE_COLUMN_2": "Column 2",
+    "EDITOR_TABS": "Editor mode"
+  },
+  "VIEWER": {
+    "LOADING": "Loading PDF…",
+    "OPEN_ERROR": "The PDF could not be opened.",
+    "PAGE_LABEL": "Page {{page}}"
+  }
+}

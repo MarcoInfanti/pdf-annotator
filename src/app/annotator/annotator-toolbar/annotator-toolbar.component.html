@@ -6,7 +6,7 @@
     [disabled]="store.busy()"
     data-testid="annotator-toolbar-open"
   >
-    Abrir PDF
+    {{ 'TOOLBAR.OPEN' | translate }}
   </button>
 
   @if (store.document(); as doc) {
@@ -17,12 +17,10 @@
       data-testid="annotator-toolbar-save"
       [disabled]="store.busy()"
       [title]="
-        store.canOverwrite()
-          ? 'Guarda las anotaciones dentro del mismo PDF (Ctrl+S)'
-          : 'Descarga el PDF con las anotaciones (Ctrl+S)'
+        store.canOverwrite() ? 'TOOLBAR.SAVE_TITLE_OVERWRITE' : 'TOOLBAR.SAVE_TITLE_DOWNLOAD'
       "
     >
-      Guardar
+      {{ 'TOOLBAR.SAVE' | translate }}
     </button>
     @if (!doc.encrypted) {
       <button
@@ -32,7 +30,7 @@
         [disabled]="store.busy()"
         data-testid="annotator-toolbar-save-copy"
       >
-        Descargar copia
+        {{ 'TOOLBAR.SAVE_COPY' | translate }}
       </button>
     }
     <span class="toolbar__separator"></span>
@@ -42,7 +40,7 @@
       (click)="store.exportJson()"
       data-testid="annotator-toolbar-export-json"
     >
-      Exportar JSON
+      {{ 'TOOLBAR.EXPORT_JSON' | translate }}
     </button>
     <button
       type="button"
@@ -50,7 +48,7 @@
       (click)="store.importJson()"
       data-testid="annotator-toolbar-import-json"
     >
-      Importar JSON
+      {{ 'TOOLBAR.IMPORT_JSON' | translate }}
     </button>
 
     <span class="toolbar__file" [title]="doc.name" data-testid="annotator-toolbar-file-name">
@@ -58,9 +56,9 @@
       @if (store.dirty()) {
         <span
           class="toolbar__dirty"
-          title="Cambios sin guardar"
+          [title]="'TOOLBAR.UNSAVED_TITLE' | translate"
           data-testid="annotator-toolbar-dirty"
-          >● sin guardar</span
+          ><span aria-hidden="true">●</span> {{ 'TOOLBAR.UNSAVED' | translate }}</span
         >
       }
     </span>
@@ -68,7 +66,7 @@
     <div
       class="toolbar__modes"
       role="group"
-      aria-label="Modo de lectura"
+      [attr.aria-label]="'TOOLBAR.READING_MODE' | translate"
       data-testid="annotator-toolbar-reading-modes"
     >
       @for (mode of readingModes; track mode.value) {
@@ -76,21 +74,26 @@
           type="button"
           class="toolbar__mode"
           [attr.aria-pressed]="readingMode.mode() === mode.value"
-          [title]="'Modo de lectura: ' + mode.label"
+          [title]="'TOOLBAR.READING_MODE_TITLE' | translate: { mode: (mode.labelKey | translate) }"
           (click)="readingMode.set(mode.value)"
           [attr.data-testid]="'annotator-toolbar-reading-mode-' + mode.value"
         >
-          <span aria-hidden="true">{{ mode.icon }}</span> {{ mode.label }}
+          <span aria-hidden="true">{{ mode.icon }}</span> {{ mode.labelKey | translate }}
         </button>
       }
     </div>
 
-    <div class="toolbar__zoom" role="group" aria-label="Zoom" data-testid="annotator-toolbar-zoom">
+    <div
+      class="toolbar__zoom"
+      role="group"
+      [attr.aria-label]="'TOOLBAR.ZOOM' | translate"
+      data-testid="annotator-toolbar-zoom"
+    >
       <button
         type="button"
         class="icon-button"
-        aria-label="Alejar"
-        title="Alejar (Ctrl −)"
+        [attr.aria-label]="'TOOLBAR.ZOOM_OUT' | translate"
+        [title]="'TOOLBAR.ZOOM_OUT_TITLE' | translate"
         (click)="store.zoom(-1)"
         data-testid="annotator-toolbar-zoom-out"
       >
@@ -98,7 +101,7 @@
       </button>
       <select
         class="toolbar__zoom-select"
-        aria-label="Nivel de zoom"
+        [attr.aria-label]="'TOOLBAR.ZOOM_LEVEL' | translate"
         (change)="changeZoom($event)"
         data-testid="annotator-toolbar-zoom-select"
       >
@@ -110,13 +113,13 @@
             {{ step * 100 | number: '1.0-0' }}%
           </option>
         }
-        <option value="fit">Ajustar al ancho</option>
+        <option value="fit">{{ 'TOOLBAR.FIT_WIDTH' | translate }}</option>
       </select>
       <button
         type="button"
         class="icon-button"
-        aria-label="Acercar"
-        title="Acercar (Ctrl +)"
+        [attr.aria-label]="'TOOLBAR.ZOOM_IN' | translate"
+        [title]="'TOOLBAR.ZOOM_IN_TITLE' | translate"
         (click)="store.zoom(1)"
         data-testid="annotator-toolbar-zoom-in"
       >
@@ -125,12 +128,13 @@
       <button
         type="button"
         class="button"
-        title="Ajustar al ancho"
+        [title]="'TOOLBAR.FIT_WIDTH' | translate"
         (click)="fitWidthRequested.emit()"
         data-testid="annotator-toolbar-fit-width"
       >
-        ↔ Ancho
+        <span aria-hidden="true">↔</span> {{ 'TOOLBAR.FIT_WIDTH_SHORT' | translate }}
       </button>
     </div>
   }
+  <app-language-switcher class="toolbar__language" />
 </header>

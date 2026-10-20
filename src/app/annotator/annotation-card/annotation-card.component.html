@@ -4,12 +4,16 @@
     class="annotation-card__page"
     data-testid="annotation-card-page"
     (click)="focusRequested.emit()"
-    [attr.aria-label]="'Ir a la página ' + annotation().page"
+    [attr.aria-label]="'CARD.GO_TO_PAGE' | translate: { page: annotation().page }"
   >
-    Pág. {{ annotation().page }}
+    {{ 'CARD.PAGE' | translate: { page: annotation().page } }}
   </button>
 
-  <div class="annotation-card__colors" role="radiogroup" aria-label="Color del subrayado">
+  <div
+    class="annotation-card__colors"
+    role="radiogroup"
+    [attr.aria-label]="'CARD.COLOR_GROUP' | translate"
+  >
     @for (color of colors; track color.value) {
       <button
         type="button"
@@ -17,9 +21,9 @@
         class="annotation-card__swatch"
         [style.background-color]="color.value"
         [attr.aria-checked]="color.value === annotation().color"
-        [attr.aria-label]="color.label"
+        [attr.aria-label]="color.labelKey | translate"
         [attr.data-testid]="'annotation-card-swatch-' + color.id"
-        [title]="color.label"
+        [title]="color.labelKey | translate"
         (click)="colorChanged.emit(color.value)"
       ></button>
     }
@@ -30,8 +34,8 @@
       type="button"
       class="icon-button"
       data-testid="annotation-card-edit"
-      title="Editar comentario"
-      aria-label="Editar comentario"
+      [title]="'CARD.EDIT' | translate"
+      [attr.aria-label]="'CARD.EDIT' | translate"
       (click)="editRequested.emit()"
     >
       ✎
@@ -41,8 +45,8 @@
     type="button"
     class="icon-button icon-button--danger"
     data-testid="annotation-card-delete"
-    title="Eliminar"
-    aria-label="Eliminar anotación"
+    [title]="'CARD.DELETE_TITLE' | translate"
+    [attr.aria-label]="'CARD.DELETE' | translate"
     (click)="deleteRequested.emit()"
   >
     🗑
@@ -61,66 +65,84 @@
 </blockquote>
 
 @if (editing()) {
-  <div class="annotation-card__tabs" role="tablist">
-    <button
-      type="button"
-      role="tab"
-      data-testid="annotation-card-tab-write"
-      [attr.aria-selected]="!preview()"
-      (click)="preview.set(false)"
+  <div class="annotation-card__tabs">
+    <div
+      class="annotation-card__tablist"
+      role="tablist"
+      [attr.aria-label]="'CARD.EDITOR_TABS' | translate"
+      data-testid="annotation-card-tablist"
     >
-      Escribir
-    </button>
-    <button
-      type="button"
-      role="tab"
-      data-testid="annotation-card-tab-preview"
-      [attr.aria-selected]="preview()"
-      (click)="preview.set(true)"
-    >
-      Vista previa
-    </button>
+      <button
+        type="button"
+        role="tab"
+        [id]="writeTabId()"
+        [attr.aria-controls]="panelId()"
+        [attr.aria-selected]="!preview()"
+        data-testid="annotation-card-tab-write"
+        (click)="preview.set(false)"
+      >
+        {{ 'CARD.WRITE' | translate }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [id]="previewTabId()"
+        [attr.aria-controls]="panelId()"
+        [attr.aria-selected]="preview()"
+        data-testid="annotation-card-tab-preview"
+        (click)="preview.set(true)"
+      >
+        {{ 'CARD.PREVIEW' | translate }}
+      </button>
+    </div>
     @if (!preview()) {
       <button
         type="button"
         class="annotation-card__insert"
         data-testid="annotation-card-insert-table"
-        title="Insertar una tabla de ejemplo"
+        [title]="'CARD.INSERT_TABLE_TITLE' | translate"
         (click)="insertTable()"
       >
-        ⊞ Tabla
+        <span aria-hidden="true">⊞</span> {{ 'CARD.INSERT_TABLE' | translate }}
       </button>
     }
   </div>
-  @if (preview()) {
-    <div
-      class="markdown annotation-card__preview"
-      data-testid="annotation-card-preview"
-      [innerHTML]="comment.value || '_Sin comentario_' | markdown"
-    ></div>
-  } @else {
-    <textarea
-      #textarea
-      class="annotation-card__editor"
-      data-testid="annotation-card-editor"
-      rows="6"
-      aria-label="Comentario en Markdown"
-      placeholder="Escribe tu nota en Markdown: **negrita**, *cursiva*, listas, `código`…"
-      [formControl]="comment"
-      (keydown)="handleEditorKeys($event)"
-    ></textarea>
-  }
+  <div
+    role="tabpanel"
+    [id]="panelId()"
+    [attr.aria-labelledby]="preview() ? previewTabId() : writeTabId()"
+    data-testid="annotation-card-panel"
+  >
+    @if (preview()) {
+      <div
+        class="markdown annotation-card__preview"
+        data-testid="annotation-card-preview"
+        [innerHTML]="comment.value || ('CARD.NO_COMMENT' | translate) | markdown"
+      ></div>
+    } @else {
+      <textarea
+        #textarea
+        class="annotation-card__editor"
+        data-testid="annotation-card-editor"
+        rows="6"
+        [attr.aria-label]="'CARD.EDITOR_LABEL' | translate"
+        [attr.placeholder]="'CARD.EDITOR_PLACEHOLDER' | translate"
+        [formControl]="comment"
+        (keydown)="handleEditorKeys($event)"
+      ></textarea>
+    }
+  </div>
   <footer class="annotation-card__actions">
-    <span class="annotation-card__hint" data-testid="annotation-card-hint"
-      >Ctrl+Enter para guardar</span
-    >
+    <span class="annotation-card__hint" data-testid="annotation-card-hint">{{
+      'CARD.HINT' | translate
+    }}</span>
     <button
       type="button"
       class="button"
       data-testid="annotation-card-cancel"
       (click)="editCancelled.emit()"
     >
-      Cancelar
+      {{ 'CARD.CANCEL' | translate }}
     </button>
     <button
       type="button"
@@ -128,7 +150,7 @@
       data-testid="annotation-card-save"
       (click)="save()"
     >
-      Guardar
+      {{ 'CARD.SAVE' | translate }}
     </button>
   </footer>
 } @else if (annotation().comment) {
@@ -144,6 +166,6 @@
     data-testid="annotation-card-add-comment"
     (click)="editRequested.emit()"
   >
-    + Añadir comentario
+    {{ 'CARD.ADD_COMMENT' | translate }}
   </button>
 }

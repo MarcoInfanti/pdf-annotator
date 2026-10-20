@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { SidebarWidthService } from '../../services/layout/sidebar-width.service';
 
 /** Draggable and keyboard-operable bar that sets the sidebar width. */
 @Component({
   selector: 'app-sidebar-resizer',
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar-resizer.component.html',
   styleUrl: './sidebar-resizer.component.scss',

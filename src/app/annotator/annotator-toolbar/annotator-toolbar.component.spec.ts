@@ -1,11 +1,17 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import type { DecodedPdf, PickedFile } from '../../models/annotator.model';
 import { FileAccessService } from '../../services/annotator/file-access.service';
 import { PdfAnnotationCodecService } from '../../services/annotator/pdf-annotation-codec.service';
-import { ReadingModeService } from '../../services/layout/reading-mode.service';
+import { READING_MODES, ReadingModeService } from '../../services/layout/reading-mode.service';
 import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
+import { missingTranslationKeys } from '../testing/translation-keys/translation-keys';
 import { AnnotatorToolbarComponent } from './annotator-toolbar.component';
 
 const BYTES = new Uint8Array([1, 2, 3]);
@@ -41,6 +47,7 @@ describe('AnnotatorToolbarComponent', () => {
       imports: [AnnotatorToolbarComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideTranslateService({ loader: provideTranslateLoader(TranslateNoOpLoader) }),
         AnnotatorSignals,
         { provide: FileAccessService, useValue: files },
         { provide: PdfAnnotationCodecService, useValue: codec },
@@ -60,6 +67,14 @@ describe('AnnotatorToolbarComponent', () => {
     expect(byTestId('annotator-toolbar-open')).not.toBeNull();
     expect(byTestId('annotator-toolbar-save')).toBeNull();
     expect(byTestId('annotator-toolbar-zoom')).toBeNull();
+  });
+
+  it('renders the language switcher with and without a document', async () => {
+    expect(byTestId('language-switcher')).not.toBeNull();
+
+    await openDocument();
+
+    expect(byTestId('language-switcher')).not.toBeNull();
   });
 
   it('emits openRequested when the open button is clicked', () => {
@@ -156,5 +171,31 @@ describe('AnnotatorToolbarComponent', () => {
     expect(byTestId('annotator-toolbar-reading-mode-normal')?.getAttribute('aria-pressed')).toBe(
       'false',
     );
+  });
+
+  it('only uses translation keys that exist in both bundles', () => {
+    const keys = [
+      'TOOLBAR.OPEN',
+      'TOOLBAR.SAVE',
+      'TOOLBAR.SAVE_TITLE_OVERWRITE',
+      'TOOLBAR.SAVE_TITLE_DOWNLOAD',
+      'TOOLBAR.SAVE_COPY',
+      'TOOLBAR.EXPORT_JSON',
+      'TOOLBAR.IMPORT_JSON',
+      'TOOLBAR.UNSAVED',
+      'TOOLBAR.UNSAVED_TITLE',
+      'TOOLBAR.READING_MODE',
+      'TOOLBAR.READING_MODE_TITLE',
+      'TOOLBAR.ZOOM',
+      'TOOLBAR.ZOOM_OUT',
+      'TOOLBAR.ZOOM_OUT_TITLE',
+      'TOOLBAR.ZOOM_IN',
+      'TOOLBAR.ZOOM_IN_TITLE',
+      'TOOLBAR.ZOOM_LEVEL',
+      'TOOLBAR.FIT_WIDTH',
+      'TOOLBAR.FIT_WIDTH_SHORT',
+    ].concat(READING_MODES.map((mode) => mode.labelKey));
+
+    expect(missingTranslationKeys(keys)).toEqual([]);
   });
 });

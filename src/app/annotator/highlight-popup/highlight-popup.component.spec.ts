@@ -1,8 +1,14 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import type { TextSelection } from '../../models/annotator.model';
 import { HIGHLIGHT_COLORS } from '../annotator.data';
+import { missingTranslationKeys } from '../testing/translation-keys/translation-keys';
 import { HighlightPopupComponent } from './highlight-popup.component';
 
 const SELECTION: TextSelection = {
@@ -29,7 +35,10 @@ describe('HighlightPopupComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HighlightPopupComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTranslateService({ loader: provideTranslateLoader(TranslateNoOpLoader) }),
+      ],
     });
     fixture = TestBed.createComponent(HighlightPopupComponent);
     fixture.componentRef.setInput('selection', SELECTION);
@@ -72,5 +81,13 @@ describe('HighlightPopupComponent', () => {
 
     expect(host.style.left).toBe('120px');
     expect(host.style.top).toBe('92px');
+  });
+
+  it('only uses translation keys that exist in both bundles', () => {
+    const keys = ['POPUP.LABEL', 'POPUP.HIGHLIGHT', 'POPUP.HIGHLIGHT_IN'].concat(
+      HIGHLIGHT_COLORS.map((color) => color.labelKey),
+    );
+
+    expect(missingTranslationKeys(keys)).toEqual([]);
   });
 });

@@ -11,6 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { RenderingCancelledException, TextLayer } from 'pdfjs-dist';
 import type { PDFPageProxy } from 'pdfjs-dist';
 import type {
@@ -22,6 +23,7 @@ import type {
   PdfViewport,
   SelectionMarker,
 } from '../../models/annotator.model';
+import { LanguageService } from '../../services/layout/language.service';
 import { appendEndOfContent, selectionInLayer } from '../text-selection/text-selection';
 
 /** One PDF page: canvas, selectable text layer and the highlights drawn on top. */
@@ -81,7 +83,7 @@ import { appendEndOfContent, selectionInLayer } from '../text-selection/text-sel
   host: {
     role: 'group',
     '[attr.data-testid]': '"pdf-page-" + page().pageNumber',
-    '[attr.aria-label]': '"Página " + page().pageNumber',
+    '[attr.aria-label]': 'pageLabel()',
     '[style.width.px]': 'viewport().width',
     '[style.height.px]': 'viewport().height',
     '[style.--scale-factor]': 'scale()',
@@ -102,6 +104,18 @@ export class PdfPageComponent {
   private textLayer: TextLayer | null = null;
   private endOfContent: HTMLDivElement | null = null;
 
+  private readonly translate = inject(TranslateService);
+  private readonly language = inject(LanguageService);
+
+  /** Accessible name of the page. A computed because the host cannot use the translate pipe. */
+  protected readonly pageLabel = computed(() => {
+    // Read for its dependency only: a language switch must re-run this computed
+    this.language.current();
+    const label: unknown = this.translate.instant('VIEWER.PAGE_LABEL', {
+      page: this.page().pageNumber,
+    });
+    return typeof label === 'string' ? label : '';
+  });
   protected readonly viewport = computed(() => this.page().getViewport({ scale: this.scale() }));
   protected readonly boxes = computed<HighlightBox[]>(() => {
     const viewport = this.viewport();

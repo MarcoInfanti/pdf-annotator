@@ -2,11 +2,11 @@
 
 @if (store.notice(); as notice) {
   <div class="notice" role="status" data-testid="annotator-notice">
-    {{ notice }}
+    {{ notice.key | translate: notice.params }}
     <button
       type="button"
       class="icon-button"
-      aria-label="Cerrar aviso"
+      [attr.aria-label]="'NOTICE.DISMISS' | translate"
       data-testid="annotator-notice-dismiss"
       (click)="store.dismissNotice()"
     >
@@ -33,11 +33,12 @@
   </main>
 } @else {
   <main class="empty-state" data-testid="annotator-empty-state">
-    <h1>Anotador de PDF</h1>
-    <p>Abre un PDF, subraya texto y añade notas en Markdown.</p>
+    <h1>{{ 'EMPTY.TITLE' | translate }}</h1>
+    <p>{{ 'EMPTY.INTRO' | translate }}</p>
     <p>
-      Las anotaciones se guardan <strong>dentro del propio PDF</strong>, así que al volver a abrirlo
-      aparecerán de nuevo. También se ven como comentarios en otros lectores (Acrobat, Edge…).
+      {{ 'EMPTY.STORAGE_BEFORE' | translate }}
+      <strong>{{ 'EMPTY.STORAGE_STRONG' | translate }}</strong
+      >{{ 'EMPTY.STORAGE_AFTER' | translate }}
     </p>
     <button
       type="button"
@@ -45,7 +46,7 @@
       data-testid="annotator-empty-open"
       (click)="open()"
     >
-      Abrir PDF
+      {{ 'TOOLBAR.OPEN' | translate }}
     </button>
   </main>
 }

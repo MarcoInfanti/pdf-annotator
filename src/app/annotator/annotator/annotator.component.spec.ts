@@ -8,6 +8,12 @@ import {
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { missingTranslationKeys } from '../testing/translation-keys/translation-keys';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import type {
   Annotation,
   DecodedPdf,
@@ -93,6 +99,7 @@ describe('AnnotatorComponent', () => {
       imports: [AnnotatorComponent],
       providers: [
         provideZonelessChangeDetection(),
+        provideTranslateService({ loader: provideTranslateLoader(TranslateNoOpLoader) }),
         { provide: FileAccessService, useValue: files },
         { provide: PdfAnnotationCodecService, useValue: codec },
       ],
@@ -136,7 +143,7 @@ describe('AnnotatorComponent', () => {
     files.pickPdf.and.rejectWith(new Error('boom'));
     await store.open();
     fixture.detectChanges();
-    expect(byTestId('annotator-notice')?.textContent).toContain('boom');
+    expect(byTestId('annotator-notice')?.textContent).toContain('NOTICE.ERROR');
 
     byTestId('annotator-notice-dismiss')?.click();
     fixture.detectChanges();
@@ -154,10 +161,11 @@ describe('AnnotatorComponent', () => {
     });
 
     it('does not pick a file when the user declines to discard them', () => {
-      spyOn(window, 'confirm').and.returnValue(false);
+      const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
 
       byTestId('annotator-toolbar-open')?.click();
 
+      expect(confirmSpy).toHaveBeenCalledWith('CONFIRM.DISCARD_CHANGES');
       expect(files.pickPdf).not.toHaveBeenCalled();
     });
 
@@ -302,5 +310,20 @@ describe('AnnotatorComponent', () => {
     toolbar.fitWidthRequested.emit();
 
     expect(store.scale()).toBe(2);
+  });
+
+  it('only uses translation keys that exist in both bundles', () => {
+    const keys = [
+      'NOTICE.DISMISS',
+      'EMPTY.TITLE',
+      'EMPTY.INTRO',
+      'EMPTY.STORAGE_BEFORE',
+      'EMPTY.STORAGE_STRONG',
+      'EMPTY.STORAGE_AFTER',
+      'TOOLBAR.OPEN',
+      'CONFIRM.DISCARD_CHANGES',
+    ];
+
+    expect(missingTranslationKeys(keys)).toEqual([]);
   });
 });

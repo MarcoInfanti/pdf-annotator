@@ -1,17 +1,17 @@
 <div
   class="highlight-popup__toolbar"
   role="toolbar"
-  aria-label="Subrayar selección"
+  [attr.aria-label]="'POPUP.LABEL' | translate"
   data-testid="highlight-popup"
 >
-  <span>Subrayar</span>
+  <span>{{ 'POPUP.HIGHLIGHT' | translate }}</span>
   @for (color of colors; track color.value) {
     <button
       type="button"
       class="highlight-popup__color"
       [style.background-color]="color.value"
-      [attr.aria-label]="'Subrayar en ' + color.label"
-      [title]="color.label"
+      [attr.aria-label]="'POPUP.HIGHLIGHT_IN' | translate: { color: (color.labelKey | translate) }"
+      [title]="color.labelKey | translate"
       [attr.data-testid]="'highlight-popup-color-' + color.id"
       (click)="colorPicked.emit(color.value)"
     ></button>

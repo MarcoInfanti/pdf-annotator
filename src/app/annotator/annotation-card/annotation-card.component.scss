@@ -73,6 +73,11 @@
   overflow: hidden;
 }
 
+.annotation-card__tablist {
+  display: flex;
+  gap: 4px;
+}
+
 .annotation-card__tabs {
   display: flex;
   gap: 4px;

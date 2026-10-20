@@ -1,11 +1,19 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import type { Annotation } from '../../models/annotator.model';
 import { HIGHLIGHT_COLORS } from '../annotator.data';
+import { missingTranslationKeys } from '../testing/translation-keys/translation-keys';
 import { AnnotationCardComponent } from './annotation-card.component';
 
-const TABLE = '| Columna 1 | Columna 2 |\n| --- | --- |\n|  |  |\n|  |  |\n';
+// The fake translate loader answers with the key itself
+const COLUMN_1 = 'CARD.TABLE_COLUMN_1';
+const TABLE = `| ${COLUMN_1} | CARD.TABLE_COLUMN_2 |\n| --- | --- |\n|  |  |\n|  |  |\n`;
 
 function annotation(overrides: Partial<Annotation> = {}): Annotation {
   return {
@@ -61,7 +69,10 @@ describe('AnnotationCardComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [AnnotationCardComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTranslateService({ loader: provideTranslateLoader(TranslateNoOpLoader) }),
+      ],
     });
     fixture = TestBed.createComponent(AnnotationCardComponent);
     component = fixture.componentInstance;
@@ -170,9 +181,7 @@ describe('AnnotationCardComponent', () => {
       click('annotation-card-insert-table');
       const textarea = editor();
       expect(textarea.value).toBe(TABLE);
-      expect(textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)).toBe(
-        'Columna 1',
-      );
+      expect(textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)).toBe(COLUMN_1);
     });
 
     it('adds one blank line when the text before ends with a newline', () => {
@@ -188,9 +197,97 @@ describe('AnnotationCardComponent', () => {
       click('annotation-card-insert-table');
       const textarea = editor();
       expect(textarea.value).toBe('intro\n\n' + TABLE);
-      expect(textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)).toBe(
-        'Columna 1',
-      );
+      expect(textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)).toBe(COLUMN_1);
     });
+  });
+
+  describe('editor tabs', () => {
+    function tabs(): HTMLElement[] {
+      const list = byTestId('annotation-card-tablist')!;
+      return Array.from(list.querySelectorAll<HTMLElement>('[role="tab"]'));
+    }
+
+    it('has exactly two tabs in the tablist, and the insert button is outside it', () => {
+      render({}, true);
+
+      expect(tabs().length).toBe(2);
+      const list = byTestId('annotation-card-tablist')!;
+      expect(list.getAttribute('role')).toBe('tablist');
+      expect(list.contains(byTestId('annotation-card-insert-table'))).toBeFalse();
+    });
+
+    it('points each tab at the panel, and the panel at the selected tab', () => {
+      render({}, true);
+      const panel = byTestId('annotation-card-panel')!;
+      const [write, preview] = tabs();
+
+      expect(panel.getAttribute('role')).toBe('tabpanel');
+      expect(write.getAttribute('aria-controls')).toBe(panel.id);
+      expect(preview.getAttribute('aria-controls')).toBe(panel.id);
+      expect(panel.getAttribute('aria-labelledby')).toBe(write.id);
+
+      click('annotation-card-tab-preview');
+
+      expect(panel.getAttribute('aria-labelledby')).toBe(preview.id);
+    });
+
+    it('toggles aria-selected with the active tab', () => {
+      render({}, true);
+      const [write, preview] = tabs();
+      expect([write.getAttribute('aria-selected'), preview.getAttribute('aria-selected')]).toEqual([
+        'true',
+        'false',
+      ]);
+
+      click('annotation-card-tab-preview');
+
+      expect([write.getAttribute('aria-selected'), preview.getAttribute('aria-selected')]).toEqual([
+        'false',
+        'true',
+      ]);
+    });
+
+    it('builds ids from the annotation id, so two cards do not collide', () => {
+      render({ id: 'a1' }, true);
+      const other = TestBed.createComponent(AnnotationCardComponent);
+      other.componentRef.setInput('annotation', annotation({ id: 'b2' }));
+      other.componentRef.setInput('editing', true);
+      other.detectChanges();
+
+      const ids = [fixture, other].flatMap((f) =>
+        Array.from((f.nativeElement as HTMLElement).querySelectorAll('[id]')).map((el) => el.id),
+      );
+
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(tabs()[0].id).toContain('a1');
+    });
+  });
+
+  it('only uses translation keys that exist in both bundles', () => {
+    const keys = [
+      'CARD.PAGE',
+      'CARD.GO_TO_PAGE',
+      'CARD.COLOR_GROUP',
+      'CARD.EDIT',
+      'CARD.DELETE_TITLE',
+      'CARD.DELETE',
+      'CARD.WRITE',
+      'CARD.PREVIEW',
+      'CARD.INSERT_TABLE',
+      'CARD.INSERT_TABLE_TITLE',
+      'CARD.NO_COMMENT',
+      'CARD.EDITOR_LABEL',
+      'CARD.EDITOR_PLACEHOLDER',
+      'CARD.HINT',
+      'CARD.CANCEL',
+      'CARD.EDITOR_TABS',
+      'CARD.SAVE',
+      'CARD.ADD_COMMENT',
+      'CARD.TABLE_COLUMN_1',
+      'CARD.TABLE_COLUMN_2',
+      ...HIGHLIGHT_COLORS.map((color) => color.labelKey),
+    ];
+
+    expect(missingTranslationKeys(keys)).toEqual([]);
   });
 });

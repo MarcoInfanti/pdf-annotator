@@ -1,0 +1,20 @@
+<div
+  class="language-switcher"
+  role="group"
+  [attr.aria-label]="'LANGUAGE.LABEL' | translate"
+  data-testid="language-switcher"
+>
+  @for (option of options; track option.lang) {
+    <button
+      type="button"
+      class="language-switcher__option"
+      [attr.lang]="option.lang"
+      [attr.aria-pressed]="language.current() === option.lang"
+      [attr.aria-label]="option.labelKey | translate"
+      [attr.data-testid]="'language-switcher-' + option.lang"
+      (click)="language.setLanguage(option.lang)"
+    >
+      {{ option.shortKey | translate }}
+    </button>
+  }
+</div>

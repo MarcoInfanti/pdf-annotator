@@ -6,12 +6,14 @@ import {
   input,
   output,
 } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { TextSelection } from '../../models/annotator.model';
 import { HIGHLIGHT_COLORS } from '../annotator.data';
 
 /** Colour picker floating next to a fresh text selection. */
 @Component({
   selector: 'app-highlight-popup',
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './highlight-popup.component.html',
   styleUrl: './highlight-popup.component.scss',

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import type { Annotation, TextSelection } from '../../models/annotator.model';
 import { HighlightPopupComponent } from '../highlight-popup/highlight-popup.component';
 import { AnnotatorToolbarComponent } from '../annotator-toolbar/annotator-toolbar.component';
@@ -10,6 +11,7 @@ import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
 @Component({
   selector: 'app-annotator',
   imports: [
+    TranslatePipe,
     AnnotatorToolbarComponent,
     HighlightPopupComponent,
     PdfViewerComponent,
@@ -26,6 +28,7 @@ import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
 })
 export class AnnotatorComponent {
   protected readonly store = inject(AnnotatorSignals);
+  private readonly translate = inject(TranslateService);
   private readonly viewer = viewChild(PdfViewerComponent);
 
   /** Text selection waiting for a colour; its presence is what shows the highlight popup. */
@@ -39,12 +42,9 @@ export class AnnotatorComponent {
 
   /** Confirms before discarding unsaved changes, then lets the store open another PDF. */
   protected open(): void {
-    if (
-      this.store.dirty() &&
-      !confirm('Hay cambios sin guardar. ¿Abrir otro PDF de todos modos?')
-    ) {
-      return;
-    }
+    // confirm() takes plain text read at click time, so it cannot use the pipe
+    const question: unknown = this.translate.instant('CONFIRM.DISCARD_CHANGES');
+    if (this.store.dirty() && !(typeof question === 'string' && confirm(question))) return;
     void this.store.open();
   }
 

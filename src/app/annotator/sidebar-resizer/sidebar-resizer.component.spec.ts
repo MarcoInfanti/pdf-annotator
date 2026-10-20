@@ -1,7 +1,13 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import { SidebarWidthService } from '../../services/layout/sidebar-width.service';
+import { missingTranslationKeys } from '../testing/translation-keys/translation-keys';
 import { SidebarResizerComponent } from './sidebar-resizer.component';
 
 const STORAGE_KEY = 'pdf-annotations.sidebar-width';
@@ -20,7 +26,10 @@ describe('SidebarResizerComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SidebarResizerComponent],
-      providers: [provideZonelessChangeDetection()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTranslateService({ loader: provideTranslateLoader(TranslateNoOpLoader) }),
+      ],
     });
     width = TestBed.inject(SidebarWidthService);
     fixture = TestBed.createComponent(SidebarResizerComponent);
@@ -73,5 +82,11 @@ describe('SidebarResizerComponent', () => {
     expect(separator.getAttribute('aria-valuenow')).toBe('420');
     expect(separator.getAttribute('aria-valuemin')).toBe(String(width.minWidth));
     expect(separator.getAttribute('aria-valuemax')).toBe(String(width.maxWidth()));
+  });
+
+  it('only uses translation keys that exist in both bundles', () => {
+    const keys = ['SIDEBAR.RESIZER_LABEL', 'SIDEBAR.RESIZER_TITLE'];
+
+    expect(missingTranslationKeys(keys)).toEqual([]);
   });
 });

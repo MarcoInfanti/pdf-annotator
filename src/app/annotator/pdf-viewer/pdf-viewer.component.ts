@@ -12,6 +12,7 @@ import {
   signal,
   viewChildren,
 } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { getDocument } from 'pdfjs-dist';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 import type { Annotation, SelectionMarker, TextSelection } from '../../models/annotator.model';
@@ -26,13 +27,17 @@ import {
 /** Scrollable list of pages. Reports text selections and clicks on highlights. */
 @Component({
   selector: 'app-pdf-viewer',
-  imports: [PdfPageComponent],
+  imports: [PdfPageComponent, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (error(); as message) {
-      <p class="pdf-viewer__status" role="alert" data-testid="pdf-viewer-error">{{ message }}</p>
+      <p class="pdf-viewer__status" role="alert" data-testid="pdf-viewer-error">
+        {{ message | translate }}
+      </p>
     } @else if (!pages().length) {
-      <p class="pdf-viewer__status" data-testid="pdf-viewer-loading">Cargando PDF…</p>
+      <p class="pdf-viewer__status" data-testid="pdf-viewer-loading">
+        {{ 'VIEWER.LOADING' | translate }}
+      </p>
     }
     @for (page of pages(); track page) {
       <app-pdf-page
@@ -84,6 +89,7 @@ export class PdfViewerComponent {
   private mozSelection: boolean | null = null;
 
   protected readonly pages = signal<PDFPageProxy[]>([]);
+  /** Translation key of the load error; null while there is none. */
   protected readonly error = signal<string | null>(null);
   protected readonly annotationsByPage = computed(() => {
     const byPage = new Map<number, Annotation[]>();
@@ -235,7 +241,7 @@ export class PdfViewerComponent {
       if (this.pdf === pdf) this.pages.set(pages);
     } catch (error) {
       console.error(error);
-      this.error.set('No se ha podido abrir el PDF.');
+      this.error.set('VIEWER.OPEN_ERROR');
     }
   }
 }

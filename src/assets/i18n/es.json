@@ -1,0 +1,107 @@
+{
+  "APP": {
+    "TITLE": "Anotador PDF"
+  },
+  "LANGUAGE": {
+    "LABEL": "Idioma",
+    "ES": "Español",
+    "EN": "English",
+    "ES_SHORT": "ES",
+    "EN_SHORT": "EN"
+  },
+  "TOOLBAR": {
+    "OPEN": "Abrir PDF",
+    "SAVE": "Guardar",
+    "SAVE_TITLE_OVERWRITE": "Guarda las anotaciones dentro del mismo PDF (Ctrl+S)",
+    "SAVE_TITLE_DOWNLOAD": "Descarga el PDF con las anotaciones (Ctrl+S)",
+    "SAVE_COPY": "Descargar copia",
+    "EXPORT_JSON": "Exportar JSON",
+    "IMPORT_JSON": "Importar JSON",
+    "UNSAVED": "sin guardar",
+    "UNSAVED_TITLE": "Cambios sin guardar",
+    "READING_MODE": "Modo de lectura",
+    "READING_MODE_TITLE": "Modo de lectura: {{mode}}",
+    "ZOOM": "Zoom",
+    "ZOOM_OUT": "Alejar",
+    "ZOOM_OUT_TITLE": "Alejar (Ctrl −)",
+    "ZOOM_IN": "Acercar",
+    "ZOOM_IN_TITLE": "Acercar (Ctrl +)",
+    "ZOOM_LEVEL": "Nivel de zoom",
+    "FIT_WIDTH": "Ajustar al ancho",
+    "FIT_WIDTH_SHORT": "Ancho"
+  },
+  "READING_MODE": {
+    "NORMAL": "Normal",
+    "SEPIA": "Sepia",
+    "NIGHT": "Noche"
+  },
+  "NOTICE": {
+    "DISMISS": "Cerrar aviso",
+    "ENCRYPTED": "Este PDF está protegido: las anotaciones se guardarán en un archivo .json aparte.",
+    "SAVED_IN": "Guardado en {{name}}",
+    "DOWNLOADED": "Se ha descargado el PDF con las anotaciones.",
+    "ERROR": "Error: {{message}}"
+  },
+  "SIDEBAR": {
+    "LABEL": "Anotaciones",
+    "TITLE": "Comentarios",
+    "SEARCH_PLACEHOLDER": "Buscar en anotaciones…",
+    "SEARCH_LABEL": "Buscar en anotaciones",
+    "NO_MATCH": "Ningún comentario coincide con la búsqueda.",
+    "EMPTY_HINT": "Selecciona texto en el PDF y elige un color para subrayarlo y comentarlo. Haz clic en un subrayado para comentarlo, cambiarle el color o eliminarlo.",
+    "RESIZER_LABEL": "Ancho del panel de comentarios",
+    "RESIZER_TITLE": "Arrastra para cambiar el ancho · doble clic para restablecer"
+  },
+  "POPUP": {
+    "LABEL": "Subrayar selección",
+    "HIGHLIGHT": "Subrayar",
+    "HIGHLIGHT_IN": "Subrayar en {{color}}"
+  },
+  "COLOR": {
+    "YELLOW": "Amarillo",
+    "GREEN": "Verde",
+    "BLUE": "Azul",
+    "PINK": "Rosa"
+  },
+  "CONFIRM": {
+    "DELETE_ANNOTATION": "¿Eliminar esta anotación?",
+    "DISCARD_CHANGES": "Hay cambios sin guardar. ¿Abrir otro PDF de todos modos?"
+  },
+  "EMPTY": {
+    "TITLE": "Anotador de PDF",
+    "INTRO": "Abre un PDF, subraya texto y añade notas en Markdown.",
+    "STORAGE_BEFORE": "Las anotaciones se guardan",
+    "STORAGE_STRONG": "dentro del propio PDF",
+    "STORAGE_AFTER": ", así que al volver a abrirlo aparecerán de nuevo. También se ven como comentarios en otros lectores (Acrobat, Edge…)."
+  },
+  "ERRORS": {
+    "UNRECOGNIZED_FORMAT": "Error: formato de anotaciones no reconocido"
+  },
+  "CARD": {
+    "PAGE": "Pág. {{page}}",
+    "GO_TO_PAGE": "Ir a la página {{page}}",
+    "COLOR_GROUP": "Color del subrayado",
+    "EDIT": "Editar comentario",
+    "DELETE_TITLE": "Eliminar",
+    "DELETE": "Eliminar anotación",
+    "WRITE": "Escribir",
+    "PREVIEW": "Vista previa",
+    "INSERT_TABLE": "Tabla",
+    "INSERT_TABLE_TITLE": "Insertar una tabla de ejemplo",
+    "NO_COMMENT": "_Sin comentario_",
+    "EDITOR_LABEL": "Comentario en Markdown",
+    "EDITOR_PLACEHOLDER": "Escribe tu nota en Markdown: **negrita**, *cursiva*, listas, `código`…",
+    "HINT": "Ctrl+Enter para guardar",
+    "CANCEL": "Cancelar",
+    "SAVE": "Guardar",
+    "ADD_COMMENT": "+ Añadir comentario",
+    "TABLE_COLUMN_1": "Columna 1",
+    "TABLE_COLUMN_2": "Columna 2",
+    "EDITOR_TABS": "Modo del editor"
+  },
+  "VIEWER": {
+    "LOADING": "Cargando PDF…",
+    "OPEN_ERROR": "No se ha podido abrir el PDF.",
+    "PAGE_LABEL": "Página {{page}}"
+  }
+}
