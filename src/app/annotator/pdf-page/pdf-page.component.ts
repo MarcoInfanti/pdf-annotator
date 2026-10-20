@@ -33,10 +33,10 @@ import { appendEndOfContent, selectionInLayer } from '../text-selection/text-sel
   template: `
     <canvas #canvas class="pdf-page__canvas"></canvas>
     <div class="pdf-page__highlights">
-      @for (box of boxes(); track $index) {
+      @for (box of boxes(); track $index; let i = $index) {
         <div
           class="pdf-page__highlight"
-          [attr.data-testid]="'pdf-page-highlight-' + box.id"
+          [attr.data-testid]="'pdf-page-highlight-' + box.id + '-' + i"
           [class.pdf-page__highlight--selected]="box.id === selectedId()"
           [style.left.px]="box.left"
           [style.top.px]="box.top"
@@ -90,10 +90,15 @@ import { appendEndOfContent, selectionInLayer } from '../text-selection/text-sel
   },
 })
 export class PdfPageComponent {
+  /** The pdf.js page to draw. */
   readonly page = input.required<PDFPageProxy>();
+  /** Render scale; the canvas and text layer follow it. */
   readonly scale = input.required<number>();
+  /** Annotations of this page, drawn as highlight boxes. */
   readonly annotations = input<Annotation[]>([]);
+  /** Id of the selected annotation, drawn emphasised. */
   readonly selectedId = input<string | null>(null);
+  /** Scroll container used to render only when near the viewport. */
   readonly scrollRoot = input<HTMLElement | null>(null);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -116,7 +121,9 @@ export class PdfPageComponent {
     });
     return typeof label === 'string' ? label : '';
   });
+  /** Page viewport at the current scale. */
   protected readonly viewport = computed(() => this.page().getViewport({ scale: this.scale() }));
+  /** Highlight boxes in viewport pixels, one per stored rectangle. */
   protected readonly boxes = computed<HighlightBox[]>(() => {
     const viewport = this.viewport();
     return this.annotations().flatMap((annotation) =>
@@ -145,6 +152,7 @@ export class PdfPageComponent {
     destroyRef.onDestroy(() => this.cancelRender());
   }
 
+  /** Whether a DOM node belongs to this page; used to attribute a selection to a page. */
   contains(node: Node): boolean {
     return this.host.contains(node);
   }
@@ -244,6 +252,7 @@ export class PdfPageComponent {
   }
 }
 
+/** Converts a PDF-space rectangle to a normalised viewport box. */
 function toViewportBox(viewport: PdfViewport, rect: PdfRect): Box {
   const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(rect) as number[];
   return {
@@ -254,6 +263,7 @@ function toViewportBox(viewport: PdfViewport, rect: PdfRect): Box {
   };
 }
 
+/** Converts a viewport box back to a normalised PDF-space rectangle. */
 function toPdfRect(viewport: PdfViewport, box: Box): PdfRect {
   const [ax, ay] = viewport.convertToPdfPoint(box.left, box.top) as number[];
   const [bx, by] = viewport.convertToPdfPoint(box.right, box.bottom) as number[];

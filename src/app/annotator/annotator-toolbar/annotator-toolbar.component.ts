@@ -17,8 +17,11 @@ import { LanguageSwitcherComponent } from '../language-switcher/language-switche
   styleUrl: './annotator-toolbar.component.scss',
 })
 export class AnnotatorToolbarComponent {
+  /** The feature store, provided by the page component. */
   protected readonly store = inject(AnnotatorSignals);
+  /** Current reading mode and its setter. */
   protected readonly readingMode = inject(ReadingModeService);
+  /** Reading modes offered by the toolbar buttons. */
   protected readonly readingModes = READING_MODES;
 
   /** The user asked to open a PDF; the page confirms unsaved changes first. */

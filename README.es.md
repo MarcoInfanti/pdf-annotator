@@ -18,6 +18,8 @@ aparecen de nuevo.
 - Exportar / importar las anotaciones como JSON (copia de seguridad y PDFs protegidos).
 - Zoom (Ctrl + rueda, Ctrl +/−, ajustar al ancho), modos de lectura Normal / Sepia / Noche y panel
   lateral redimensionable con búsqueda.
+- Interfaz en español e inglés, con un selector de idioma en la barra de herramientas (sigue el
+  idioma del navegador hasta que eliges uno).
 
 ## Privacidad
 
@@ -29,10 +31,15 @@ Requiere Node.js 20 o superior.
 
 ```bash
 npm install
-npm start            # servidor de desarrollo en http://localhost:4200
-npm run build        # compilación de producción en dist/
-npm test             # tests unitarios (Karma + Jasmine)
-npm run e2e          # tests end-to-end (Playwright, Chromium)
+npm start               # servidor de desarrollo en http://localhost:4200
+npm run build           # compilación de producción en dist/
+npm test                # tests unitarios (Karma + Jasmine)
+npm run lint            # ESLint (obligatorio)
+npm run format          # Prettier, escribe
+npm run format:check    # Prettier, solo comprueba
+npm run typecheck:e2e   # comprueba los tipos de los tests e2e y de la config de Playwright
+npm run e2e             # tests end-to-end (Playwright, Chromium)
+npm run e2e:headed      # igual, con el navegador visible
 ```
 
 La primera vez que ejecutes los tests e2e instala el navegador con `npx playwright install chromium`.

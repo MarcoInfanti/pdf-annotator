@@ -63,6 +63,7 @@ export class FileAccessService {
   }
 }
 
+/** Reads a file fully into memory. */
 async function readBytes(file: File): Promise<Uint8Array> {
   return new Uint8Array(await file.arrayBuffer());
 }

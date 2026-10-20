@@ -15,7 +15,9 @@ import { SidebarResizerComponent } from '../sidebar-resizer/sidebar-resizer.comp
   styleUrl: './annotator-sidebar.component.scss',
 })
 export class AnnotatorSidebarComponent {
+  /** The feature store, provided by the page component. */
   protected readonly store = inject(AnnotatorSignals);
+  /** Persisted sidebar width; the template binds it as the panel width. */
   protected readonly sidebarWidth = inject(SidebarWidthService);
   private readonly translate = inject(TranslateService);
 

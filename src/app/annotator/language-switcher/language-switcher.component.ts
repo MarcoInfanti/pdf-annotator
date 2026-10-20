@@ -12,6 +12,8 @@ import { LANGUAGES, LanguageService } from '../../services/layout/language.servi
   styleUrl: './language-switcher.component.scss',
 })
 export class LanguageSwitcherComponent {
+  /** Current language and its setter. */
   protected readonly language = inject(LanguageService);
+  /** Languages offered by the switcher. */
   protected readonly options = LANGUAGES;
 }

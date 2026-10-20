@@ -69,15 +69,22 @@ import {
   },
 })
 export class PdfViewerComponent {
+  /** The PDF file bytes to render. */
   readonly data = input.required<Uint8Array>();
+  /** Render scale shared by every page. */
   readonly scale = input(1.25);
+  /** Every annotation of the document. */
   readonly annotations = input<Annotation[]>([]);
+  /** Id of the selected annotation. */
   readonly selectedId = input<string | null>(null);
+  /** Emits the selected text with its page and rectangles. */
   readonly textSelected = output<TextSelection>();
+  /** Emits the id of the clicked highlight, or null for a click elsewhere. */
   readonly annotationClicked = output<string | null>();
   /** Ctrl + mouse wheel: 1 zooms in, -1 zooms out. */
   readonly zoomRequested = output<1 | -1>();
 
+  /** The scroll container element. */
   protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly pageComponents = viewChildren(PdfPageComponent);
   private pdf: PDFDocumentProxy | null = null;
@@ -88,9 +95,11 @@ export class PdfViewerComponent {
   private previousRange: Range | null = null;
   private mozSelection: boolean | null = null;
 
+  /** Loaded pdf.js pages. */
   protected readonly pages = signal<PDFPageProxy[]>([]);
   /** Translation key of the load error; null while there is none. */
   protected readonly error = signal<string | null>(null);
+  /** Annotations grouped by page number. */
   protected readonly annotationsByPage = computed(() => {
     const byPage = new Map<number, Annotation[]>();
     for (const annotation of this.annotations()) {
@@ -119,6 +128,7 @@ export class PdfViewerComponent {
     return available / page.getViewport({ scale: 1 }).width;
   }
 
+  /** Scrolls smoothly so the annotation sits near the top of the viewer. */
   scrollTo(annotation: Annotation): void {
     const page = annotation.page > 0 ? this.pageComponents().at(annotation.page - 1) : undefined;
     if (page) {
@@ -126,6 +136,7 @@ export class PdfViewerComponent {
     }
   }
 
+  /** Ctrl/Cmd + wheel zooms instead of scrolling. */
   protected zoomWithWheel(event: WheelEvent): void {
     if (!event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
@@ -145,6 +156,7 @@ export class PdfViewerComponent {
     });
   }
 
+  /** Marks the pressed text layer so drags over gaps do not jump to the container. */
   protected startSelection(event: MouseEvent): void {
     const textLayer = (event.target as Element).closest('.textLayer');
     // pdf.js' CSS stretches the layer's endOfContent over the page while selecting, so drags over
@@ -153,6 +165,7 @@ export class PdfViewerComponent {
     this.pressedTextLayer = textLayer;
   }
 
+  /** Clears the marker and reports the text selection, if any. */
   protected finishSelection(event: MouseEvent): void {
     if (!this.pressedTextLayer) return;
     this.pressedTextLayer.classList.remove('selecting');

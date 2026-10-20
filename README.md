@@ -19,6 +19,8 @@ still there.
 - Export / import annotations as JSON (backups and password-protected PDFs).
 - Zoom (Ctrl + wheel, Ctrl +/−, fit to width), Normal / Sepia / Night reading modes, and a
   resizable, searchable sidebar.
+- Spanish and English interface, with a language switcher in the toolbar (it follows the browser
+  language until you choose one).
 
 ## Privacy
 
@@ -30,10 +32,15 @@ Requires Node.js 20 or later.
 
 ```bash
 npm install
-npm start            # dev server at http://localhost:4200
-npm run build        # production build in dist/
-npm test             # unit tests (Karma + Jasmine)
-npm run e2e          # end-to-end tests (Playwright, Chromium)
+npm start               # dev server at http://localhost:4200
+npm run build           # production build in dist/
+npm test                # unit tests (Karma + Jasmine)
+npm run lint            # ESLint (mandatory)
+npm run format          # Prettier, writes
+npm run format:check    # Prettier, checks only
+npm run typecheck:e2e   # type-checks the e2e tests and the Playwright config
+npm run e2e             # end-to-end tests (Playwright, Chromium)
+npm run e2e:headed      # same, with the browser visible
 ```
 
 Before running the e2e tests for the first time, install the browser with

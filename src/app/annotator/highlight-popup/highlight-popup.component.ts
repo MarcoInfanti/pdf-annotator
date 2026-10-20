@@ -34,6 +34,7 @@ export class HighlightPopupComponent {
   /** The user pressed the mouse outside the popup. */
   readonly dismissed = output();
 
+  /** Colours offered for a new highlight; the first is the default. */
   protected readonly colors = HIGHLIGHT_COLORS;
 
   /** Emits `dismissed` for a mousedown anywhere but on the popup itself. */

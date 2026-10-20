@@ -11,7 +11,9 @@ import { SidebarWidthService } from '../../services/layout/sidebar-width.service
   styleUrl: './sidebar-resizer.component.scss',
 })
 export class SidebarResizerComponent {
+  /** Persisted sidebar width the handle changes. */
   protected readonly sidebarWidth = inject(SidebarWidthService);
+  /** True while a pointer drag is in progress. */
   protected readonly resizing = signal(false);
 
   /** Captures the pointer so the drag keeps working outside the thin bar. */

@@ -27,6 +27,7 @@ import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
   },
 })
 export class AnnotatorComponent {
+  /** The feature store, provided by this component so it lives and dies with it. */
   protected readonly store = inject(AnnotatorSignals);
   private readonly translate = inject(TranslateService);
   private readonly viewer = viewChild(PdfViewerComponent);

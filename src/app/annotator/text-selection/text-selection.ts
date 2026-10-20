@@ -42,6 +42,7 @@ export function selectedParts(range: Range, layer: Element): SpanPart[] {
   return parts;
 }
 
+/** Client rectangles of a range, relative to the page origin. */
 function boxesOf(range: Range, origin: DOMRect): Box[] {
   return [...range.getClientRects()]
     .filter((r) => r.width >= 1 && r.height >= 1)
@@ -63,6 +64,7 @@ export function quoteOf(parts: SpanPart[]): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+/** Whether two text-layer spans sit on different visual lines. */
 function breaksLine(previous: Element, next: Element): boolean {
   const scope = previous.closest('.textLayer') ?? (previous.getRootNode() as ParentNode);
   return [...scope.querySelectorAll('br')].some(

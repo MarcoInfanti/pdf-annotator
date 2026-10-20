@@ -18,6 +18,7 @@ const STORAGE_KEY = 'pdf-annotations.reading-mode';
 @Injectable({ providedIn: 'root' })
 export class ReadingModeService {
   private readonly _mode = signal<ReadingMode>(readStoredMode());
+  /** Current reading mode. */
   readonly mode = this._mode.asReadonly();
 
   constructor() {
@@ -40,6 +41,7 @@ export class ReadingModeService {
   }
 }
 
+/** Stored reading mode, or normal when absent or invalid. */
 function readStoredMode(): ReadingMode {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);

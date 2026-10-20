@@ -112,6 +112,7 @@ export class PdfAnnotationCodecService {
   }
 }
 
+/** Converts a #rrggbb colour to the 0-1 channel values PDF expects. */
 function hexToRgb(hex: string): number[] {
   const value = parseInt(hex.slice(1), 16);
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255].map((c) => c / 255);

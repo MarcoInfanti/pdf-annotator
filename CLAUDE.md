@@ -20,11 +20,11 @@ npm start                    # dev server
 npm run build                # production build
 npx ng test --watch=false    # Karma + Jasmine unit specs
 npm run e2e                  # Playwright against the dev server on port 4300
-npm run e2e:headed  # same, with the browser visible
-npx ng lint  # ESLint, mandatory
-npm run format  # Prettier, writes
-npm run format:check  # Prettier, checks only
-npm run typecheck:e2e  # type-checks e2e and the config
+npm run e2e:headed           # same, with the browser visible
+npx ng lint                  # ESLint, mandatory (npm run lint is the same)
+npm run format               # Prettier, writes
+npm run format:check         # Prettier, checks only
+npm run typecheck:e2e        # type-checks e2e and the config
 ```
 
 ### Verification gate
@@ -53,6 +53,7 @@ src/app/
   annotator/annotator.data.ts                 data file (loose, allowed)
   annotator/<helper>/<helper>.ts (+ .spec.ts) helper modules: text-selection, selection-marker,
                                               annotation-file, translatable-error, markdown
+                                              (pipe)
   annotator/testing/dom-builders/dom-builders.ts  spec-only helpers (excluded from the app build)
   models/annotator.model.ts, models/layout.model.ts   types only, one file per feature
   services/annotator/*.service.ts (+spec)     root services: file access, PDF codec
@@ -66,9 +67,6 @@ e2e/                                          Playwright; e2e/fixtures/ helpers
 The page is `annotator/annotator/`: every component, the page included, gets its own folder under
 `src/app/annotator/`. One folder per unit, named after it; only `*.routes.ts` and data files sit
 loose. File name matches the exported class.
-
-This is the target layout; the standards pass (`.claude/roadmaps/standards-pass.md`) moves the
-code there step by step.
 
 ## Services vs. stores
 
@@ -140,7 +138,10 @@ the `-anotado.pdf` suffix, `.annotations.json`, the catalog keys).
 ## data-testid
 
 `<unit>-<element>[-<variant>]`, on every interactive or assertable element. Bind the id for
-repeated elements: `'annotation-card-' + annotation().id`, `'highlight-popup-color-' + color.id`.
+repeated elements: `'annotation-card-' + annotation().id`, `'highlight-popup-color-' + color.id`,
+`'pdf-page-highlight-' + box.id + '-' + index`. The elements inside an annotation card keep static
+ids (`annotation-card-quote`, `-edit`, ...) and are addressed through the card's bound host id:
+`getByTestId('annotation-card-<id>').getByTestId('annotation-card-quote')`.
 
 ## Accessibility
 
