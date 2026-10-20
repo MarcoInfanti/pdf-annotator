@@ -1,59 +1,44 @@
-# PdfAnnotations
+# PDF Annotator
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.36.
+Visor de PDF en el navegador para subrayar texto y añadir comentarios en Markdown. Las anotaciones
+se guardan **dentro del propio PDF**, sin base de datos ni servidor: al volver a abrir el archivo
+aparecen de nuevo.
 
-## Development server
+## Funcionalidades
 
-To start a local development server, run:
+- Subrayado de texto en cuatro colores.
+- Comentarios en Markdown (con tablas), con vista previa; se pueden añadir, editar y eliminar.
+- Las anotaciones se guardan en el PDF de dos formas:
+  - una copia JSON completa, para restaurarlas exactamente en esta app;
+  - subrayados estándar de PDF con el comentario, visibles en Acrobat, Edge y otros lectores.
+- En Chrome y Edge se guarda sobre el mismo archivo (File System Access API); en otros navegadores
+  se descarga una copia anotada.
+- Exportar / importar las anotaciones como JSON (copia de seguridad y PDFs protegidos).
+- Zoom (Ctrl + rueda, Ctrl +/−, ajustar al ancho), modos de lectura Normal / Sepia / Noche y panel
+  lateral redimensionable con búsqueda.
 
-```bash
-ng serve
-```
+## Privacidad
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Todo ocurre en tu navegador: los PDF no se suben a ningún servidor.
 
-## Code scaffolding
+## Desarrollo
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Requiere Node.js 20 o superior.
 
 ```bash
-ng build
+npm install
+npm start            # servidor de desarrollo en http://localhost:4200
+npm run build        # compilación de producción en dist/
+npm test             # tests unitarios (Karma + Jasmine)
+npm run e2e          # tests end-to-end (Playwright, Chromium)
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+La primera vez que ejecutes los tests e2e instala el navegador con `npx playwright install chromium`.
 
-## Running unit tests
+Hecho con Angular 20, [pdf.js](https://mozilla.github.io/pdf.js/) para mostrar el PDF,
+[pdf-lib](https://pdf-lib.js.org/) para escribir las anotaciones y [marked](https://marked.js.org/)
+para el Markdown.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Licencia
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+[MIT](LICENSE) © 2026 Marco Infanti
