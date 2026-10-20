@@ -1,12 +1,12 @@
-import type { Box } from './pdf-page.component';
+import type { Box } from '../../models/annotator.model';
+import { br, cleanup, layerOf, range, span } from '../testing/dom-builders/dom-builders';
 import {
   appendEndOfContent,
   mergeLines,
   quoteOf,
   selectedParts,
   selectionInLayer,
-} from './pdf-page.component';
-import { br, cleanup, layerOf, range, span } from './testing/dom-builders';
+} from './text-selection';
 
 interface BuiltLayer {
   layer: HTMLDivElement;

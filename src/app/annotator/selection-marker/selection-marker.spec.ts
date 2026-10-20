@@ -1,11 +1,11 @@
-import type { SelectionMarker } from './pdf-page.component';
+import type { SelectionMarker } from '../../models/annotator.model';
+import { cleanup, layerOf, range, span, track } from '../testing/dom-builders/dom-builders';
 import {
   markSelectingLayers,
   moveEndOfContent,
   resetMarker,
   usesMozUserSelect,
-} from './pdf-viewer.component';
-import { cleanup, layerOf, range, span, track } from './testing/dom-builders';
+} from './selection-marker';
 
 afterEach(cleanup);
 

@@ -11,8 +11,8 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import type { Annotation } from './annotation.model';
-import { HIGHLIGHT_COLORS } from './annotation.model';
+import type { Annotation } from '../models/annotator.model';
+import { HIGHLIGHT_COLORS } from './annotator.data';
 import { MarkdownPipe } from './markdown.pipe';
 
 @Component({

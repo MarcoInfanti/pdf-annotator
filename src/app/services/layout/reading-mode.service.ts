@@ -1,8 +1,9 @@
 import { effect, Injectable, signal } from '@angular/core';
 
-export type ReadingMode = 'normal' | 'sepia' | 'night';
+import type { ReadingMode, ReadingModeOption } from '../../models/layout.model';
 
-export const READING_MODES: { value: ReadingMode; label: string; icon: string }[] = [
+/** Modes offered in the toolbar, in display order. */
+export const READING_MODES: ReadingModeOption[] = [
   { value: 'normal', label: 'Normal', icon: '☀' },
   { value: 'sepia', label: 'Sepia', icon: '☕' },
   { value: 'night', label: 'Noche', icon: '☾' },
@@ -28,6 +29,7 @@ export class ReadingModeService {
     });
   }
 
+  /** Applies the mode and remembers it; storage failures are ignored. */
   set(mode: ReadingMode): void {
     this._mode.set(mode);
     try {

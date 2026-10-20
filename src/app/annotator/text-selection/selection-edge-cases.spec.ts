@@ -1,6 +1,10 @@
-import { quoteOf, selectedParts, selectionInLayer } from './pdf-page.component';
-import { markSelectingLayers, moveEndOfContent, resetMarker } from './pdf-viewer.component';
-import { br, cleanup, layerOf, range, span, track } from './testing/dom-builders';
+import {
+  markSelectingLayers,
+  moveEndOfContent,
+  resetMarker,
+} from '../selection-marker/selection-marker';
+import { br, cleanup, layerOf, range, span, track } from '../testing/dom-builders/dom-builders';
+import { quoteOf, selectedParts, selectionInLayer } from './text-selection';
 
 afterEach(cleanup);
 

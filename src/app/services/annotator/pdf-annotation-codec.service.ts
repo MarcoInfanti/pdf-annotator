@@ -9,20 +9,16 @@ import {
   PDFRef,
   PDFString,
 } from 'pdf-lib';
-import type { Annotation } from './annotation.model';
-import { parseAnnotationFile, serializeAnnotations } from './annotation.model';
+import type { Annotation, DecodedPdf } from '../../models/annotator.model';
+import {
+  parseAnnotationFile,
+  serializeAnnotations,
+} from '../../annotator/annotation-file/annotation-file';
 
 /** Catalog key holding the JSON with every annotation (the source of truth). */
 const DATA_KEY = PDFName.of('PdfAnnotationsData');
 /** Marks the Highlight annotations written by this app, so they can be replaced on save. */
 const ID_KEY = PDFName.of('PdfAnnotationsId');
-
-export interface DecodedPdf {
-  /** The PDF without this app's annotations: what gets rendered and re-annotated on save. */
-  cleanBytes: Uint8Array;
-  annotations: Annotation[];
-  encrypted: boolean;
-}
 
 /**
  * Reads and writes annotations inside the PDF itself. They are stored twice:
@@ -30,7 +26,8 @@ export interface DecodedPdf {
  * Highlight annotations with the Markdown in /Contents, so any other PDF reader shows them.
  */
 @Injectable({ providedIn: 'root' })
-export class PdfAnnotationCodec {
+export class PdfAnnotationCodecService {
+  /** Reads the annotations and returns the PDF without them; encrypted PDFs come back untouched. */
   async decode(bytes: Uint8Array): Promise<DecodedPdf> {
     const doc = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
     if (doc.isEncrypted) {
@@ -42,6 +39,7 @@ export class PdfAnnotationCodec {
     return { cleanBytes, annotations, encrypted: false };
   }
 
+  /** Writes the annotations into a clean PDF; annotations on missing pages are skipped. */
   async encode(cleanBytes: Uint8Array, annotations: Annotation[]): Promise<Uint8Array> {
     const doc = await PDFDocument.load(cleanBytes, { updateMetadata: false });
     const pages = doc.getPages();

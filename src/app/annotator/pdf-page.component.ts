@@ -13,41 +13,16 @@ import {
 } from '@angular/core';
 import { RenderingCancelledException, TextLayer } from 'pdfjs-dist';
 import type { PDFPageProxy } from 'pdfjs-dist';
-import type { Annotation, PdfRect } from './annotation.model';
-
-type Viewport = ReturnType<PDFPageProxy['getViewport']>;
-type RenderTask = ReturnType<PDFPageProxy['render']>;
-
-/** Axis-aligned rectangle in page-relative CSS pixels. */
-export interface Box {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-}
-
-/** One selected text span and the part of it that the selection covers. */
-export interface SpanPart {
-  span: Element;
-  range: Range;
-}
-
-/** What a selection covers on one page, in page-relative CSS pixels. */
-export interface SelectedText {
-  boxes: Box[];
-  quote: string;
-}
-
-/** A rendered text layer and its pdf.js-style end-of-content marker. */
-export interface SelectionMarker {
-  layer: HTMLElement;
-  end: HTMLElement;
-}
-
-interface HighlightBox extends Box {
-  id: string;
-  color: string;
-}
+import type {
+  Annotation,
+  Box,
+  HighlightBox,
+  PdfRect,
+  PdfRenderTask,
+  PdfViewport,
+  SelectionMarker,
+} from '../models/annotator.model';
+import { appendEndOfContent, selectionInLayer } from './text-selection/text-selection';
 
 /** One PDF page: canvas, selectable text layer and the highlights drawn on top. */
 @Component({
@@ -121,7 +96,7 @@ export class PdfPageComponent {
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly textLayerDiv = viewChild.required<ElementRef<HTMLDivElement>>('textLayer');
   private readonly visible = signal(false);
-  private renderTask: RenderTask | null = null;
+  private renderTask: PdfRenderTask | null = null;
   private textLayer: TextLayer | null = null;
   private endOfContent: HTMLDivElement | null = null;
 
@@ -197,7 +172,7 @@ export class PdfPageComponent {
     return this.host.offsetTop + Math.min(...tops);
   }
 
-  private async render(viewport: Viewport, visible: boolean): Promise<void> {
+  private async render(viewport: PdfViewport, visible: boolean): Promise<void> {
     this.cancelRender();
     const canvas = this.canvas().nativeElement;
     const textDiv = this.textLayerDiv().nativeElement;
@@ -211,7 +186,7 @@ export class PdfPageComponent {
   }
 
   /** Returns false when the render was cancelled or superseded by a newer one. */
-  private async drawCanvas(viewport: Viewport, canvas: HTMLCanvasElement): Promise<boolean> {
+  private async drawCanvas(viewport: PdfViewport, canvas: HTMLCanvasElement): Promise<boolean> {
     const context = canvas.getContext('2d');
     if (!context) return false;
     const ratio = window.devicePixelRatio || 1;
@@ -232,7 +207,7 @@ export class PdfPageComponent {
     return this.renderTask === task;
   }
 
-  private async renderTextLayer(viewport: Viewport, container: HTMLDivElement): Promise<void> {
+  private async renderTextLayer(viewport: PdfViewport, container: HTMLDivElement): Promise<void> {
     const textLayer = new TextLayer({
       textContentSource: this.page().streamTextContent(),
       container,
@@ -253,7 +228,7 @@ export class PdfPageComponent {
   }
 }
 
-function toViewportBox(viewport: Viewport, rect: PdfRect): Box {
+function toViewportBox(viewport: PdfViewport, rect: PdfRect): Box {
   const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(rect) as number[];
   return {
     left: Math.min(x1, x2),
@@ -263,101 +238,8 @@ function toViewportBox(viewport: Viewport, rect: PdfRect): Box {
   };
 }
 
-function toPdfRect(viewport: Viewport, box: Box): PdfRect {
+function toPdfRect(viewport: PdfViewport, box: Box): PdfRect {
   const [ax, ay] = viewport.convertToPdfPoint(box.left, box.top) as number[];
   const [bx, by] = viewport.convertToPdfPoint(box.right, box.bottom) as number[];
   return [Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by)];
-}
-
-/** Joins the per-span rects of a selection into one rect per text line. */
-export function mergeLines(boxes: Box[]): Box[] {
-  const lines: Box[] = [];
-  for (const box of [...boxes].sort((a, b) => a.top - b.top || a.left - b.left)) {
-    const line = lines.find((l) => {
-      const overlap = Math.min(l.bottom, box.bottom) - Math.max(l.top, box.top);
-      return overlap > 0.5 * Math.min(l.bottom - l.top, box.bottom - box.top);
-    });
-    if (line) {
-      line.left = Math.min(line.left, box.left);
-      line.top = Math.min(line.top, box.top);
-      line.right = Math.max(line.right, box.right);
-      line.bottom = Math.max(line.bottom, box.bottom);
-    } else {
-      lines.push({ ...box });
-    }
-  }
-  return lines;
-}
-
-/**
- * Intersects the selection with the layer's text spans (the clamp): boundaries sitting on a
- * container are resolved to their DOM position and trimmed to the spans of this layer.
- */
-export function selectedParts(range: Range, layer: Element): SpanPart[] {
-  const parts: SpanPart[] = [];
-  for (const span of layer.querySelectorAll('span[role="presentation"]')) {
-    if (!range.intersectsNode(span)) continue;
-    const part = document.createRange();
-    part.selectNodeContents(span);
-    if (range.compareBoundaryPoints(Range.START_TO_START, part) > 0) {
-      part.setStart(range.startContainer, range.startOffset);
-    }
-    if (range.compareBoundaryPoints(Range.END_TO_END, part) < 0) {
-      part.setEnd(range.endContainer, range.endOffset);
-    }
-    // A range ending at offset 0 of the text node is not collapsed but covers nothing
-    if (part.toString()) parts.push({ span, range: part });
-  }
-  return parts;
-}
-
-function boxesOf(range: Range, origin: DOMRect): Box[] {
-  return [...range.getClientRects()]
-    .filter((r) => r.width >= 1 && r.height >= 1)
-    .map((r) => ({
-      left: r.left - origin.left,
-      top: r.top - origin.top,
-      right: r.right - origin.left,
-      bottom: r.bottom - origin.top,
-    }));
-}
-
-/** Text of the parts, with one space where a line break separates two spans. */
-export function quoteOf(parts: SpanPart[]): string {
-  let text = '';
-  parts.forEach((part, i) => {
-    if (i > 0 && breaksLine(parts[i - 1].span, part.span)) text += ' ';
-    text += part.range.toString();
-  });
-  return text.replace(/\s+/g, ' ').trim();
-}
-
-function breaksLine(previous: Element, next: Element): boolean {
-  const scope = previous.closest('.textLayer') ?? (previous.getRootNode() as ParentNode);
-  return [...scope.querySelectorAll('br')].some(
-    (br) =>
-      previous.compareDocumentPosition(br) & Node.DOCUMENT_POSITION_FOLLOWING &&
-      next.compareDocumentPosition(br) & Node.DOCUMENT_POSITION_PRECEDING,
-  );
-}
-
-/** Rects and quote of a selection on one layer, both derived from the same clipped pieces. */
-export function selectionInLayer(
-  range: Range,
-  layer: Element,
-  origin: DOMRect,
-): SelectedText | null {
-  const parts = selectedParts(range, layer);
-  const boxes = mergeLines(parts.flatMap((part) => boxesOf(part.range, origin)));
-  const quote = quoteOf(parts);
-  return boxes.length && quote ? { boxes, quote } : null;
-}
-
-/** Adds pdf.js' end-of-content marker as the last child; its CSS ships in pdf_viewer.css. */
-export function appendEndOfContent(layer: HTMLElement): HTMLDivElement {
-  const end = document.createElement('div');
-  end.className = 'endOfContent';
-  end.setAttribute('aria-hidden', 'true');
-  layer.append(end);
-  return end;
 }

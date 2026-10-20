@@ -1,22 +1,20 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { Annotation, TextSelection } from './annotation.model';
-import { HIGHLIGHT_COLORS, parseAnnotationFile, serializeAnnotations } from './annotation.model';
-import type { PickedFile } from './file-access.service';
-import { FileAccessService } from './file-access.service';
-import type { DecodedPdf } from './pdf-annotation-codec';
-import { PdfAnnotationCodec } from './pdf-annotation-codec';
-
-interface OpenDocument {
-  name: string;
-  handle: FileSystemFileHandle | null;
-  cleanBytes: Uint8Array;
-  encrypted: boolean;
-}
+import type {
+  Annotation,
+  DecodedPdf,
+  OpenDocument,
+  PickedFile,
+  TextSelection,
+} from '../models/annotator.model';
+import { HIGHLIGHT_COLORS } from './annotator.data';
+import { parseAnnotationFile, serializeAnnotations } from './annotation-file/annotation-file';
+import { FileAccessService } from '../services/annotator/file-access.service';
+import { PdfAnnotationCodecService } from '../services/annotator/pdf-annotation-codec.service';
 
 @Injectable({ providedIn: 'root' })
 export class AnnotatorStore {
   private readonly files = inject(FileAccessService);
-  private readonly codec = inject(PdfAnnotationCodec);
+  private readonly codec = inject(PdfAnnotationCodecService);
 
   private readonly _document = signal<OpenDocument | null>(null);
   private readonly _annotations = signal<Annotation[]>([]);

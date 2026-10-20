@@ -8,12 +8,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { Annotation, TextSelection } from './annotation.model';
-import { HIGHLIGHT_COLORS } from './annotation.model';
+import type { Annotation, TextSelection } from '../models/annotator.model';
+import { HIGHLIGHT_COLORS } from './annotator.data';
 import { AnnotationCardComponent } from './annotation-card.component';
 import { AnnotatorStore } from './annotator.store';
 import { PdfViewerComponent } from './pdf-viewer.component';
-import { READING_MODES, ReadingModeService } from './reading-mode.service';
+import { READING_MODES, ReadingModeService } from '../services/layout/reading-mode.service';
 
 const ZOOM_STEPS = [0.25, 0.5, 0.67, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 const MIN_ZOOM = ZOOM_STEPS[0];

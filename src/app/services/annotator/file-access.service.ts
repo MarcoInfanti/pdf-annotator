@@ -1,27 +1,16 @@
 import { Injectable } from '@angular/core';
+import type { FilePickerWindow, PickedFile } from '../../models/annotator.model';
 
-export interface PickedFile {
-  name: string;
-  bytes: Uint8Array;
-  /** Present when the browser supports the File System Access API (Chrome, Edge). */
-  handle: FileSystemFileHandle | null;
-}
-
-interface FilePickerOptions {
-  types: { description: string; accept: Record<string, string[]> }[];
-}
-
-type FilePickerWindow = Window & {
-  showOpenFilePicker?: (options: FilePickerOptions) => Promise<FileSystemFileHandle[]>;
-};
-
+/** File picker filter for PDFs. */
 const PDF_TYPE = { description: 'PDF', accept: { 'application/pdf': ['.pdf'] } };
 
 /** Opens files and writes them back, overwriting the original when the browser allows it. */
 @Injectable({ providedIn: 'root' })
 export class FileAccessService {
+  /** True when the browser can hand out writable file handles (File System Access API). */
   readonly canOverwrite = typeof (window as FilePickerWindow).showOpenFilePicker === 'function';
 
+  /** Asks for a PDF; resolves `null` when the user cancels the picker. */
   async pickPdf(): Promise<PickedFile | null> {
     const picker = (window as FilePickerWindow).showOpenFilePicker;
     if (!picker) {
@@ -38,17 +27,20 @@ export class FileAccessService {
     }
   }
 
+  /** Asks for a text file with an input element; resolves `null` when cancelled. */
   async pickText(accept: string): Promise<string | null> {
     const file = await this.pickWithInput(accept);
     return file ? file.text() : null;
   }
 
+  /** Writes the bytes over the file the handle points to. */
   async overwrite(handle: FileSystemFileHandle, bytes: Uint8Array): Promise<void> {
     const writable = await handle.createWritable();
     await writable.write(bytes as Uint8Array<ArrayBuffer>);
     await writable.close();
   }
 
+  /** Triggers a browser download; the object URL is revoked after one second. */
   download(content: Uint8Array | string, fileName: string, type: string): void {
     const blob = new Blob([content as BlobPart], { type });
     const url = URL.createObjectURL(blob);
