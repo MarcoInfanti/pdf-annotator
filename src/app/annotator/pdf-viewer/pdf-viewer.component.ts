@@ -14,14 +14,14 @@ import {
 } from '@angular/core';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
-import type { Annotation, SelectionMarker, TextSelection } from '../models/annotator.model';
-import { PdfPageComponent } from './pdf-page.component';
+import type { Annotation, SelectionMarker, TextSelection } from '../../models/annotator.model';
+import { PdfPageComponent } from '../pdf-page/pdf-page.component';
 import {
   markSelectingLayers,
   moveEndOfContent,
   resetMarker,
   usesMozUserSelect,
-} from './selection-marker/selection-marker';
+} from '../selection-marker/selection-marker';
 
 GlobalWorkerOptions.workerSrc = 'pdf.worker.min.mjs';
 

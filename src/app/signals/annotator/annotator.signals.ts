@@ -5,14 +5,21 @@ import type {
   OpenDocument,
   PickedFile,
   TextSelection,
-} from '../models/annotator.model';
-import { HIGHLIGHT_COLORS } from './annotator.data';
-import { parseAnnotationFile, serializeAnnotations } from './annotation-file/annotation-file';
-import { FileAccessService } from '../services/annotator/file-access.service';
-import { PdfAnnotationCodecService } from '../services/annotator/pdf-annotation-codec.service';
+} from '../../models/annotator.model';
+import { HIGHLIGHT_COLORS } from '../../annotator/annotator.data';
+import {
+  parseAnnotationFile,
+  serializeAnnotations,
+} from '../../annotator/annotation-file/annotation-file';
+import { FileAccessService } from '../../services/annotator/file-access.service';
+import { PdfAnnotationCodecService } from '../../services/annotator/pdf-annotation-codec.service';
 
-@Injectable({ providedIn: 'root' })
-export class AnnotatorStore {
+/**
+ * State of the open document and its annotations. Provided by `AnnotatorComponent`, so it lives
+ * and dies with it; every write goes through an action.
+ */
+@Injectable()
+export class AnnotatorSignals {
   private readonly files = inject(FileAccessService);
   private readonly codec = inject(PdfAnnotationCodecService);
 
@@ -24,17 +31,26 @@ export class AnnotatorStore {
   private readonly _busy = signal(false);
   private readonly _notice = signal<string | null>(null);
 
+  /** The PDF currently open, or null. */
   readonly document = this._document.asReadonly();
+  /** Annotation highlighted in the viewer and the sidebar. */
   readonly selectedId = this._selectedId.asReadonly();
+  /** Annotation whose comment editor is open. */
   readonly editingId = this._editingId.asReadonly();
+  /** True when there are changes not yet written to the PDF or a JSON file. */
   readonly dirty = this._dirty.asReadonly();
+  /** True while a file operation is running. */
   readonly busy = this._busy.asReadonly();
+  /** Message for the notice bar; null when there is none. */
   readonly notice = this._notice.asReadonly();
+  /** True when the open file can be saved in place. */
   readonly canOverwrite = computed(() => !!this._document()?.handle);
+  /** Every annotation ordered by page, then from the top of the page down. */
   readonly annotations = computed(() =>
     [...this._annotations()].sort((a, b) => a.page - b.page || topOf(b) - topOf(a)),
   );
 
+  /** Asks the user for a PDF and replaces the session with it; asks first if there are unsaved changes. */
   async open(): Promise<void> {
     if (this._dirty() && !confirm('Hay cambios sin guardar. ¿Abrir otro PDF de todos modos?')) {
       return;
@@ -86,6 +102,7 @@ export class AnnotatorStore {
     });
   }
 
+  /** Downloads an annotated copy named `<name>-anotado.pdf`; the open document stays dirty. No-op for encrypted PDFs. */
   async saveCopy(): Promise<void> {
     const doc = this._document();
     if (!doc || doc.encrypted) return;
@@ -99,6 +116,7 @@ export class AnnotatorStore {
     });
   }
 
+  /** Downloads the annotations as `<name>.annotations.json`. Only clears dirty for encrypted PDFs, where it is the way to save. */
   exportJson(): void {
     const doc = this._document();
     if (!doc) return;
@@ -107,6 +125,7 @@ export class AnnotatorStore {
     if (doc.encrypted) this._dirty.set(false);
   }
 
+  /** Merges annotations from a JSON file, skipping ids already present. */
   async importJson(): Promise<void> {
     await this.run(async () => {
       const json = await this.files.pickText('.json,application/json');
@@ -118,6 +137,7 @@ export class AnnotatorStore {
     });
   }
 
+  /** Creates an empty annotation from a text selection, then selects it and opens its editor. */
   add(selection: TextSelection, color: string = HIGHLIGHT_COLORS[0].value): void {
     const now = new Date().toISOString();
     const annotation: Annotation = {
@@ -136,15 +156,18 @@ export class AnnotatorStore {
     this._dirty.set(true);
   }
 
+  /** Stores the comment and closes the editor. */
   updateComment(id: string, comment: string): void {
     this.patch(id, { comment });
     this._editingId.set(null);
   }
 
+  /** Changes the highlight colour (as rrggbb hex) of an annotation. */
   changeColor(id: string, color: string): void {
     this.patch(id, { color });
   }
 
+  /** Deletes an annotation; selection and editing are cleared only if they pointed at it. */
   remove(id: string): void {
     this._annotations.update((list) => list.filter((a) => a.id !== id));
     if (this._selectedId() === id) this._selectedId.set(null);
@@ -152,19 +175,23 @@ export class AnnotatorStore {
     this._dirty.set(true);
   }
 
+  /** Highlights an annotation, or clears the selection with null. */
   select(id: string | null): void {
     this._selectedId.set(id);
   }
 
+  /** Selects the annotation and opens its comment editor. */
   startEditing(id: string): void {
     this._selectedId.set(id);
     this._editingId.set(id);
   }
 
+  /** Closes the comment editor. */
   stopEditing(): void {
     this._editingId.set(null);
   }
 
+  /** Hides the notice bar. */
   dismissNotice(): void {
     this._notice.set(null);
   }
@@ -177,6 +204,7 @@ export class AnnotatorStore {
     this._dirty.set(true);
   }
 
+  /** Runs a file operation with busy set; a failure becomes an `Error:` notice instead of throwing. */
   private async run(action: () => Promise<void>): Promise<void> {
     this._busy.set(true);
     try {
@@ -190,6 +218,7 @@ export class AnnotatorStore {
   }
 }
 
+/** Highest y of the annotation rects: its vertical position on the page. */
 function topOf(annotation: Annotation): number {
   return Math.max(...annotation.rects.map((rect) => rect[3]));
 }

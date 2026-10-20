@@ -11,10 +11,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import type { Annotation } from '../models/annotator.model';
-import { HIGHLIGHT_COLORS } from './annotator.data';
-import { MarkdownPipe } from './markdown.pipe';
+import type { Annotation } from '../../models/annotator.model';
+import { HIGHLIGHT_COLORS } from '../annotator.data';
+import { MarkdownPipe } from '../markdown/markdown.pipe';
 
+/** One annotation in the sidebar: quote, colour, Markdown comment and its editor. */
 @Component({
   selector: 'app-annotation-card',
   imports: [ReactiveFormsModule, MarkdownPipe],

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { AnnotatorComponent } from './annotator/annotator.component';
+import { AnnotatorComponent } from './annotator/annotator/annotator.component';
 
+/** Root component: hosts the annotator. */
 @Component({
   selector: 'app-root',
   imports: [AnnotatorComponent],

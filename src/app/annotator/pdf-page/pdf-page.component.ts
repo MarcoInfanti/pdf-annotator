@@ -21,8 +21,8 @@ import type {
   PdfRenderTask,
   PdfViewport,
   SelectionMarker,
-} from '../models/annotator.model';
-import { appendEndOfContent, selectionInLayer } from './text-selection/text-selection';
+} from '../../models/annotator.model';
+import { appendEndOfContent, selectionInLayer } from '../text-selection/text-selection';
 
 /** One PDF page: canvas, selectable text layer and the highlights drawn on top. */
 @Component({

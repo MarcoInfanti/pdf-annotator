@@ -8,12 +8,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { Annotation, TextSelection } from '../models/annotator.model';
-import { HIGHLIGHT_COLORS } from './annotator.data';
-import { AnnotationCardComponent } from './annotation-card.component';
-import { AnnotatorStore } from './annotator.store';
-import { PdfViewerComponent } from './pdf-viewer.component';
-import { READING_MODES, ReadingModeService } from '../services/layout/reading-mode.service';
+import type { Annotation, TextSelection } from '../../models/annotator.model';
+import { HIGHLIGHT_COLORS } from '../annotator.data';
+import { AnnotationCardComponent } from '../annotation-card/annotation-card.component';
+import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
+import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
+import { READING_MODES, ReadingModeService } from '../../services/layout/reading-mode.service';
 
 const ZOOM_STEPS = [0.25, 0.5, 0.67, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 const MIN_ZOOM = ZOOM_STEPS[0];
@@ -23,9 +23,11 @@ const SIDEBAR_DEFAULT_WIDTH = 380;
 const SIDEBAR_MIN_WIDTH = 260;
 const SIDEBAR_WIDTH_KEY = 'pdf-annotations.sidebar-width';
 
+/** The annotator page: toolbar, PDF viewer, highlight popup and annotation sidebar. */
 @Component({
   selector: 'app-annotator',
   imports: [PdfViewerComponent, AnnotationCardComponent, DecimalPipe],
+  providers: [AnnotatorSignals],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './annotator.component.html',
   styleUrl: './annotator.component.scss',
@@ -36,7 +38,7 @@ const SIDEBAR_WIDTH_KEY = 'pdf-annotations.sidebar-width';
   },
 })
 export class AnnotatorComponent {
-  protected readonly store = inject(AnnotatorStore);
+  protected readonly store = inject(AnnotatorSignals);
   protected readonly readingMode = inject(ReadingModeService);
   protected readonly readingModes = READING_MODES;
   private readonly viewer = viewChild(PdfViewerComponent);
