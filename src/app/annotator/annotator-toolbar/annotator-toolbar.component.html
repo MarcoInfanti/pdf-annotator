@@ -17,7 +17,8 @@
       data-testid="annotator-toolbar-save"
       [disabled]="store.busy()"
       [title]="
-        store.canOverwrite() ? 'TOOLBAR.SAVE_TITLE_OVERWRITE' : 'TOOLBAR.SAVE_TITLE_DOWNLOAD'
+        (store.canOverwrite() ? 'TOOLBAR.SAVE_TITLE_OVERWRITE' : 'TOOLBAR.SAVE_TITLE_DOWNLOAD')
+          | translate
       "
     >
       {{ 'TOOLBAR.SAVE' | translate }}

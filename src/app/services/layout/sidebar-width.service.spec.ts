@@ -76,6 +76,57 @@ describe('SidebarWidthService', () => {
     expect(localStorage.getItem(KEY)).toBe('380');
   });
 
+  describe('when the viewport resizes', () => {
+    let viewport = 1000;
+
+    function createAt(width: number, stored?: string): SidebarWidthService {
+      viewport = width;
+      spyOnProperty(window, 'innerWidth', 'get').and.callFake(() => viewport);
+      if (stored !== undefined) localStorage.setItem(KEY, stored);
+      return create();
+    }
+
+    function resizeTo(width: number): void {
+      viewport = width;
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    it('re-clamps the displayed width and maxWidth when the viewport shrinks', () => {
+      const service = createAt(1000, '700');
+
+      resizeTo(600);
+
+      expect(service.maxWidth()).toBe(420);
+      expect(service.width()).toBe(420);
+    });
+
+    it('returns to the chosen width when the viewport grows again', () => {
+      const service = createAt(1000, '700');
+
+      resizeTo(600);
+      resizeTo(1000);
+
+      expect(service.width()).toBe(700);
+    });
+
+    it('does not overwrite the stored width on resize', () => {
+      createAt(1000, '700');
+
+      resizeTo(600);
+
+      expect(localStorage.getItem(KEY)).toBe('700');
+    });
+
+    it('stops listening when the service is destroyed', () => {
+      const service = createAt(1000, '700');
+      TestBed.resetTestingModule();
+
+      resizeTo(600);
+
+      expect(service.maxWidth()).toBe(700);
+    });
+  });
+
   it('updates the width without throwing when storage is unavailable', () => {
     const service = create();
     spyOn(Storage.prototype, 'setItem').and.throwError('quota');

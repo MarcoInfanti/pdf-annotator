@@ -5,6 +5,7 @@ import {
   provideTranslateLoader,
   provideTranslateService,
   TranslateNoOpLoader,
+  TranslateService,
 } from '@ngx-translate/core';
 import type { DecodedPdf, PickedFile } from '../../models/annotator.model';
 import { FileAccessService } from '../../services/annotator/file-access.service';
@@ -171,6 +172,15 @@ describe('AnnotatorToolbarComponent', () => {
     expect(byTestId('annotator-toolbar-reading-mode-normal')?.getAttribute('aria-pressed')).toBe(
       'false',
     );
+  });
+
+  it('translates the save button title instead of showing the raw key', async () => {
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', { TOOLBAR: { SAVE_TITLE_DOWNLOAD: 'Download the PDF' } });
+    translate.use('en');
+    await openDocument();
+
+    expect(byTestId('annotator-toolbar-save')?.getAttribute('title')).toBe('Download the PDF');
   });
 
   it('only uses translation keys that exist in both bundles', () => {
