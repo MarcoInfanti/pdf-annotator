@@ -1,4 +1,5 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import {
   boxOf,
   centreOf,
@@ -7,9 +8,9 @@ import {
   lineSpan,
   openFixture,
   pageAt,
-  Point,
   quoteText,
 } from './fixtures/pdf-page-helpers';
+import type { Point } from './fixtures/pdf-page-helpers';
 
 test.beforeEach(({ page }) => openFixture(page));
 

@@ -1,4 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import {
   centreOf,
   drag,
@@ -6,9 +7,9 @@ import {
   lineSpan,
   openFixture,
   pageAt,
-  Point,
   quoteText,
 } from './fixtures/pdf-page-helpers';
+import type { Point } from './fixtures/pdf-page-helpers';
 
 test.beforeEach(({ page }) => openFixture(page));
 
@@ -32,8 +33,9 @@ test('a backward drag from page 2 up into page 1 highlights only the pressed pag
 });
 
 async function clientRectOfText(pdfPage: Locator, sentinel: string, word: string): Promise<Point> {
-  return pdfPage.locator('.textLayer span[role="presentation"]', { hasText: sentinel }).evaluate(
-    (el, w) => {
+  return pdfPage
+    .locator('.textLayer span[role="presentation"]', { hasText: sentinel })
+    .evaluate((el, w) => {
       const node = el.firstChild as Text;
       const i = node.data.indexOf(w);
       const r = document.createRange();
@@ -41,9 +43,7 @@ async function clientRectOfText(pdfPage: Locator, sentinel: string, word: string
       r.setEnd(node, i + w.length);
       const b = r.getBoundingClientRect();
       return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
-    },
-    word,
-  );
+    }, word);
 }
 
 test('a backward drag from the middle of a page 2 line stops at the anchor, not the line end', async ({

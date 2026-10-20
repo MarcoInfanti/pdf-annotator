@@ -1,4 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import {
   boxOf,
   centreOf,
@@ -6,10 +7,9 @@ import {
   lineSpan,
   openFixture,
   pageAt,
-  Point,
   quoteText,
-  Rect,
 } from './fixtures/pdf-page-helpers';
+import type { Point, Rect } from './fixtures/pdf-page-helpers';
 
 /**
  * Adversarial selection cases: backward and mixed drags, marker lifecycle, regressions.
@@ -77,14 +77,21 @@ const gapBetween = (upper: Rect, lower: Rect): number => (upper.y + upper.height
 /** Highlight rectangles of page one as screen boxes. */
 async function highlightBoxes(page: Page, index = 0): Promise<Rect[]> {
   const out: Rect[] = [];
-  for (const h of await pageAt(page, index).locator('.pdf-page__highlight').all()) out.push(await boxOf(h));
+  for (const h of await pageAt(page, index).locator('.pdf-page__highlight').all())
+    out.push(await boxOf(h));
   return out;
 }
 
 test.describe('backward and mixed drags', () => {
-  test('backward drag from BRAVO up to the start of ALPHA keeps only those two lines', async ({ page }) => {
+  test('backward drag from BRAVO up to the start of ALPHA keeps only those two lines', async ({
+    page,
+  }) => {
     const l = await lines(page);
-    await dragPath(page, { x: l.bravo.x + l.bravo.width - 3, y: mid(l.bravo) }, { x: l.alpha.x + 2, y: mid(l.alpha) });
+    await dragPath(
+      page,
+      { x: l.bravo.x + l.bravo.width - 3, y: mid(l.bravo) },
+      { x: l.alpha.x + 2, y: mid(l.alpha) },
+    );
     const quote = await highlight(page);
     expect(quote).toContain('PHA');
     expect(quote).toContain('BRAVO');
@@ -94,7 +101,9 @@ test.describe('backward and mixed drags', () => {
     for (const b of boxes) expect(b.y + b.height).toBeLessThanOrEqual(l.charlie.y + 0.5);
   });
 
-  test('backward drag ending in the gap above the dragged-from line excludes the lines above the gap', async ({ page }) => {
+  test('backward drag ending in the gap above the dragged-from line excludes the lines above the gap', async ({
+    page,
+  }) => {
     const l = await lines(page);
     await dragPath(
       page,
@@ -125,7 +134,9 @@ test.describe('backward and mixed drags', () => {
     expect(quote).toContain('BRAVO');
   });
 
-  test('backward drag ending above the first line selects up to the start of the page, not the other page', async ({ page }) => {
+  test('backward drag ending above the first line selects up to the start of the page, not the other page', async ({
+    page,
+  }) => {
     const l = await lines(page);
     const pageBox = await boxOf(pageAt(page, 0));
     await dragPath(
@@ -140,7 +151,9 @@ test.describe('backward and mixed drags', () => {
     await expect(pageAt(page, 1).locator('.pdf-page__highlight')).toHaveCount(0);
   });
 
-  test('going down then coming back up retracts the highlight to the final position', async ({ page }) => {
+  test('going down then coming back up retracts the highlight to the final position', async ({
+    page,
+  }) => {
     const l = await lines(page);
     await dragPath(
       page,
@@ -154,7 +167,9 @@ test.describe('backward and mixed drags', () => {
     expect(await highlightBoxes(page)).toHaveLength(2);
   });
 
-  test('going down into the gap and back up onto the first line retracts to one line', async ({ page }) => {
+  test('going down into the gap and back up onto the first line retracts to one line', async ({
+    page,
+  }) => {
     const l = await lines(page);
     await dragPath(
       page,
@@ -167,10 +182,16 @@ test.describe('backward and mixed drags', () => {
     expect(await highlightBoxes(page)).toHaveLength(1);
   });
 
-  test('a drag started in the margin and ending on text never spills past the dragged line', async ({ page }) => {
+  test('a drag started in the margin and ending on text never spills past the dragged line', async ({
+    page,
+  }) => {
     const l = await lines(page);
     const pageBox = await boxOf(pageAt(page, 0));
-    await dragPath(page, { x: pageBox.x + 5, y: mid(l.bravo) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await dragPath(
+      page,
+      { x: pageBox.x + 5, y: mid(l.bravo) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     // Starting in the margin may select nothing; when it selects something it must stay on BRAVO's line.
     if (await popup(page).isVisible()) {
       const quote = await highlight(page);
@@ -178,7 +199,9 @@ test.describe('backward and mixed drags', () => {
     }
   });
 
-  test('backward drag from page two into page one never highlights past the start page', async ({ page }) => {
+  test('backward drag from page two into page one never highlights past the start page', async ({
+    page,
+  }) => {
     const echo = await centreOf(lineSpan(pageAt(page, 0), 'ECHO'));
     const foxtrot = await centreOf(lineSpan(pageAt(page, 1), 'FOXTROT'));
     await dragPath(page, foxtrot, echo);
@@ -193,21 +216,37 @@ test.describe('backward and mixed drags', () => {
 });
 
 test.describe('marker lifecycle', () => {
-  test('the layer is flagged selecting during the drag and reset after mouseup', async ({ page }) => {
+  test('the layer is flagged selecting during the drag and reset after mouseup', async ({
+    page,
+  }) => {
     const l = await lines(page);
-    await press(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await press(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await expect(page.locator('.textLayer.selecting')).toHaveCount(1);
     await page.mouse.up();
     await expect(page.locator('.textLayer.selecting')).toHaveCount(0);
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
-    expect(await page.locator('.endOfContent').evaluateAll(els => els.map(e => (e as HTMLElement).style.height))).toEqual(['', '']);
+    expect(
+      await page
+        .locator('.endOfContent')
+        .evaluateAll((els) => els.map((e) => (e as HTMLElement).style.height)),
+    ).toEqual(['', '']);
   });
 
-  test('the end-of-content marker moves with the drag and is only a child of its own layer', async ({ page }) => {
+  test('the end-of-content marker moves with the drag and is only a child of its own layer', async ({
+    page,
+  }) => {
     const l = await lines(page);
-    await press(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
-    const state = await pageAt(page, 0).evaluate(host => {
-      const end = host.querySelector('.endOfContent') as HTMLElement;
+    await press(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
+    const state = await pageAt(page, 0).evaluate((host) => {
+      const end = host.querySelector<HTMLElement>('.endOfContent')!;
       return { last: end === end.parentElement?.lastElementChild, height: end.style.height };
     });
     // Mid-drag the marker sits next to the moving end (not at the end of the layer) and is sized.
@@ -218,16 +257,26 @@ test.describe('marker lifecycle', () => {
 
   test('window blur mid-drag resets the marker and the selecting flag', async ({ page }) => {
     const l = await lines(page);
-    await press(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await press(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await page.evaluate(() => window.dispatchEvent(new Event('blur')));
     await expect(page.locator('.textLayer.selecting')).toHaveCount(0);
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
     await page.mouse.up();
   });
 
-  test('keyup mid-drag does not reset, keyup after the drag leaves everything reset', async ({ page }) => {
+  test('keyup mid-drag does not reset, keyup after the drag leaves everything reset', async ({
+    page,
+  }) => {
     const l = await lines(page);
-    await press(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await press(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift' })));
     await expect(page.locator('.textLayer.selecting')).toHaveCount(1);
     await page.mouse.up();
@@ -236,7 +285,9 @@ test.describe('marker lifecycle', () => {
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
   });
 
-  test('a keyboard selection (Shift+Arrow) leaves nothing flagged once the key is released', async ({ page }) => {
+  test('a keyboard selection (Shift+Arrow) leaves nothing flagged once the key is released', async ({
+    page,
+  }) => {
     const l = await lines(page);
     await page.mouse.click(l.alpha.x + 10, mid(l.alpha));
     await page.keyboard.press('Shift+ArrowDown');
@@ -247,23 +298,40 @@ test.describe('marker lifecycle', () => {
 
   test('a mouseup outside the viewer still ends the drag', async ({ page }) => {
     const l = await lines(page);
-    await press(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) }, { x: 5, y: 880 });
+    await press(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+      { x: 5, y: 880 },
+    );
     await page.mouse.up();
     await expect(page.locator('.textLayer.selecting')).toHaveCount(0);
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
   });
 
-  test('zooming in keeps a marker in every re-rendered layer and nothing stays flagged', async ({ page }) => {
+  test('zooming in keeps a marker in every re-rendered layer and nothing stays flagged', async ({
+    page,
+  }) => {
     const l = await lines(page);
-    await dragPath(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await dragPath(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await page.getByRole('button', { name: 'Acercar' }).click();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
     await expect(page.locator('.textLayer.selecting')).toHaveCount(0);
   });
 
-  test('a zoom in the middle of a drag leaves nothing flagged after the release', async ({ page }) => {
+  test('a zoom in the middle of a drag leaves nothing flagged after the release', async ({
+    page,
+  }) => {
     const l = await lines(page);
-    await press(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await press(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await page.keyboard.press('Control+=');
     await page.mouse.up();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
@@ -278,23 +346,37 @@ test.describe('marker lifecycle', () => {
       .toBeGreaterThan(widthBefore * 1.05);
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
     const l = await lines(page);
-    await dragPath(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 40, y: mid(l.bravo) });
+    await dragPath(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 40, y: mid(l.bravo) },
+    );
     const quote = await highlight(page);
     expect(quote).toContain('BRA');
     expectNone(quote, ['CHARLIE', 'DELTA', 'ECHO', 'FOXTROT']);
   });
 
-  test('opening a second PDF does not duplicate listeners: one popup and one annotation per selection', async ({ page }) => {
-    page.on('dialog', dialog => void dialog.accept());
+  test('opening a second PDF does not duplicate listeners: one popup and one annotation per selection', async ({
+    page,
+  }) => {
+    page.on('dialog', (dialog) => void dialog.accept());
     const l = await lines(page);
-    await dragPath(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await dragPath(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await highlight(page);
     await page.getByRole('button', { name: 'Abrir PDF' }).first().click();
     await expect(page.locator('.pdf-page__highlight')).toHaveCount(0);
     await expect(lineSpan(pageAt(page, 0), 'BRAVO')).toBeVisible();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
     const m = await lines(page);
-    await dragPath(page, { x: m.alpha.x + 10, y: mid(m.alpha) }, { x: m.bravo.x + 50, y: mid(m.bravo) });
+    await dragPath(
+      page,
+      { x: m.alpha.x + 10, y: mid(m.alpha) },
+      { x: m.bravo.x + 50, y: mid(m.bravo) },
+    );
     await expect(popup(page)).toHaveCount(1);
     await highlight(page);
     await expect(page.locator('blockquote.annotation-card__quote')).toHaveCount(1);
@@ -315,7 +397,11 @@ test.describe('regressions', () => {
 
   test('highlights follow zoom: they scale and stay over the dragged text', async ({ page }) => {
     const l = await lines(page);
-    await dragPath(page, { x: l.alpha.x + 10, y: mid(l.alpha) }, { x: l.bravo.x + 50, y: mid(l.bravo) });
+    await dragPath(
+      page,
+      { x: l.alpha.x + 10, y: mid(l.alpha) },
+      { x: l.bravo.x + 50, y: mid(l.bravo) },
+    );
     await highlight(page);
     const before = await highlightBoxes(page);
     await page.getByRole('button', { name: 'Acercar' }).click();

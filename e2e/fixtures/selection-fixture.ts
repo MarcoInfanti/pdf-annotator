@@ -1,4 +1,5 @@
-import { PDFDocument, PDFFont, PDFPage, StandardFonts } from 'pdf-lib';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
+import type { PDFFont, PDFPage } from 'pdf-lib';
 
 /** Lines drawn on each page, top to bottom. Every line starts with a unique sentinel word. */
 export const PAGE_ONE_LINES = [

@@ -1,4 +1,5 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { buildSelectionFixture } from './selection-fixture';
 
 export interface Point {
@@ -18,9 +19,11 @@ export interface Rect extends Point {
 export async function openFixture(page: Page): Promise<void> {
   const base64 = Buffer.from(await buildSelectionFixture()).toString('base64');
   await page.addInitScript((data: string) => {
-    const bytes = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+    const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
     const file = new File([bytes], 'fixture.pdf', { type: 'application/pdf' });
-    Object.assign(window, { showOpenFilePicker: async () => [{ getFile: async () => file }] });
+    Object.assign(window, {
+      showOpenFilePicker: () => Promise.resolve([{ getFile: () => Promise.resolve(file) }]),
+    });
   }, base64);
   await page.goto('/');
   await page.getByRole('button', { name: 'Abrir PDF' }).first().click();
