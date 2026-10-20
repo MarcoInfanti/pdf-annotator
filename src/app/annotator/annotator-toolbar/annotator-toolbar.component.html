@@ -1,0 +1,136 @@
+<header class="toolbar">
+  <button
+    type="button"
+    class="button button--primary"
+    (click)="openRequested.emit()"
+    [disabled]="store.busy()"
+    data-testid="annotator-toolbar-open"
+  >
+    Abrir PDF
+  </button>
+
+  @if (store.document(); as doc) {
+    <button
+      type="button"
+      class="button"
+      (click)="store.save()"
+      data-testid="annotator-toolbar-save"
+      [disabled]="store.busy()"
+      [title]="
+        store.canOverwrite()
+          ? 'Guarda las anotaciones dentro del mismo PDF (Ctrl+S)'
+          : 'Descarga el PDF con las anotaciones (Ctrl+S)'
+      "
+    >
+      Guardar
+    </button>
+    @if (!doc.encrypted) {
+      <button
+        type="button"
+        class="button"
+        (click)="store.saveCopy()"
+        [disabled]="store.busy()"
+        data-testid="annotator-toolbar-save-copy"
+      >
+        Descargar copia
+      </button>
+    }
+    <span class="toolbar__separator"></span>
+    <button
+      type="button"
+      class="button"
+      (click)="store.exportJson()"
+      data-testid="annotator-toolbar-export-json"
+    >
+      Exportar JSON
+    </button>
+    <button
+      type="button"
+      class="button"
+      (click)="store.importJson()"
+      data-testid="annotator-toolbar-import-json"
+    >
+      Importar JSON
+    </button>
+
+    <span class="toolbar__file" [title]="doc.name" data-testid="annotator-toolbar-file-name">
+      {{ doc.name }}
+      @if (store.dirty()) {
+        <span
+          class="toolbar__dirty"
+          title="Cambios sin guardar"
+          data-testid="annotator-toolbar-dirty"
+          >● sin guardar</span
+        >
+      }
+    </span>
+
+    <div
+      class="toolbar__modes"
+      role="group"
+      aria-label="Modo de lectura"
+      data-testid="annotator-toolbar-reading-modes"
+    >
+      @for (mode of readingModes; track mode.value) {
+        <button
+          type="button"
+          class="toolbar__mode"
+          [attr.aria-pressed]="readingMode.mode() === mode.value"
+          [title]="'Modo de lectura: ' + mode.label"
+          (click)="readingMode.set(mode.value)"
+          [attr.data-testid]="'annotator-toolbar-reading-mode-' + mode.value"
+        >
+          <span aria-hidden="true">{{ mode.icon }}</span> {{ mode.label }}
+        </button>
+      }
+    </div>
+
+    <div class="toolbar__zoom" role="group" aria-label="Zoom" data-testid="annotator-toolbar-zoom">
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Alejar"
+        title="Alejar (Ctrl −)"
+        (click)="store.zoom(-1)"
+        data-testid="annotator-toolbar-zoom-out"
+      >
+        −
+      </button>
+      <select
+        class="toolbar__zoom-select"
+        aria-label="Nivel de zoom"
+        (change)="changeZoom($event)"
+        data-testid="annotator-toolbar-zoom-select"
+      >
+        @if (!store.zoomSteps.includes(store.scale())) {
+          <option [value]="store.scale()" selected>{{ store.zoomPercent() }}%</option>
+        }
+        @for (step of store.zoomSteps; track step) {
+          <option [value]="step" [selected]="step === store.scale()">
+            {{ step * 100 | number: '1.0-0' }}%
+          </option>
+        }
+        <option value="fit">Ajustar al ancho</option>
+      </select>
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Acercar"
+        title="Acercar (Ctrl +)"
+        (click)="store.zoom(1)"
+        data-testid="annotator-toolbar-zoom-in"
+      >
+        +
+      </button>
+      <button
+        type="button"
+        class="button"
+        title="Ajustar al ancho"
+        (click)="fitWidthRequested.emit()"
+        data-testid="annotator-toolbar-fit-width"
+      >
+        ↔ Ancho
+      </button>
+    </div>
+  }
+</header>

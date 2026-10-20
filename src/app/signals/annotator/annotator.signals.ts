@@ -14,6 +14,18 @@ import {
 import { FileAccessService } from '../../services/annotator/file-access.service';
 import { PdfAnnotationCodecService } from '../../services/annotator/pdf-annotation-codec.service';
 
+/** Zoom levels the toolbar offers and the zoom actions step through, ascending. */
+const ZOOM_STEPS = [0.25, 0.5, 0.67, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
+
+/** Lowest scale the viewer can be set to. */
+const MIN_ZOOM = ZOOM_STEPS[0];
+
+/** Highest scale the viewer can be set to. */
+const MAX_ZOOM = ZOOM_STEPS[ZOOM_STEPS.length - 1];
+
+/** Scale of a freshly opened viewer. */
+const DEFAULT_ZOOM = 1.25;
+
 /**
  * State of the open document and its annotations. Provided by `AnnotatorComponent`, so it lives
  * and dies with it; every write goes through an action.
@@ -30,6 +42,8 @@ export class AnnotatorSignals {
   private readonly _dirty = signal(false);
   private readonly _busy = signal(false);
   private readonly _notice = signal<string | null>(null);
+  private readonly _scale = signal(DEFAULT_ZOOM);
+  private readonly _search = signal('');
 
   /** The PDF currently open, or null. */
   readonly document = this._document.asReadonly();
@@ -43,18 +57,39 @@ export class AnnotatorSignals {
   readonly busy = this._busy.asReadonly();
   /** Message for the notice bar; null when there is none. */
   readonly notice = this._notice.asReadonly();
+  /** Viewer zoom factor (1 is 100%). */
+  readonly scale = this._scale.asReadonly();
+  /** Raw text typed in the sidebar search box. */
+  readonly search = this._search.asReadonly();
+  /** The zoom levels the toolbar offers. */
+  readonly zoomSteps = ZOOM_STEPS;
   /** True when the open file can be saved in place. */
   readonly canOverwrite = computed(() => !!this._document()?.handle);
   /** Every annotation ordered by page, then from the top of the page down. */
   readonly annotations = computed(() =>
     [...this._annotations()].sort((a, b) => a.page - b.page || topOf(b) - topOf(a)),
   );
+  /** The scale as a rounded percentage, for the toolbar when it is between steps. */
+  readonly zoomPercent = computed(() => Math.round(this._scale() * 100));
+  /** Highlights without a comment only show up while selected or being edited. */
+  readonly listedAnnotations = computed(() => {
+    const selectedId = this._selectedId();
+    const editingId = this._editingId();
+    return this.annotations().filter((a) => a.comment || a.id === selectedId || a.id === editingId);
+  });
+  /** Listed annotations whose quote or comment contains the search term (case-insensitive, trimmed). */
+  readonly visibleAnnotations = computed(() => {
+    const term = this._search().trim().toLowerCase();
+    const listed = this.listedAnnotations();
+    return term
+      ? listed.filter((a) => (a.quote + ' ' + a.comment).toLowerCase().includes(term))
+      : listed;
+  });
+  /** How many annotations have a comment. */
+  readonly commentCount = computed(() => this._annotations().filter((a) => a.comment).length);
 
-  /** Asks the user for a PDF and replaces the session with it; asks first if there are unsaved changes. */
+  /** Asks the user for a PDF and replaces the session with it. Confirming unsaved changes is the caller's job. */
   async open(): Promise<void> {
-    if (this._dirty() && !confirm('Hay cambios sin guardar. ¿Abrir otro PDF de todos modos?')) {
-      return;
-    }
     await this.run(async () => {
       const picked = await this.files.pickPdf();
       if (!picked) return;
@@ -189,6 +224,26 @@ export class AnnotatorSignals {
   /** Closes the comment editor. */
   stopEditing(): void {
     this._editingId.set(null);
+  }
+
+  /** Moves to the next zoom step, also from a scale between steps (e.g. after "fit width"). */
+  zoom(direction: 1 | -1): void {
+    const current = this._scale();
+    const next =
+      direction === 1
+        ? ZOOM_STEPS.find((step) => step > current + 0.001)
+        : [...ZOOM_STEPS].reverse().find((step) => step < current - 0.001);
+    if (next !== undefined) this._scale.set(next);
+  }
+
+  /** Sets the zoom factor, clamped to the supported range; it need not be one of the steps. */
+  setZoom(scale: number): void {
+    this._scale.set(Math.min(Math.max(scale, MIN_ZOOM), MAX_ZOOM));
+  }
+
+  /** Stores the search box text as typed; trimming and casing are applied when filtering. */
+  setSearch(term: string): void {
+    this._search.set(term);
   }
 
   /** Hides the notice bar. */

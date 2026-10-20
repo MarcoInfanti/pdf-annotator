@@ -1,0 +1,18 @@
+:host {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.sidebar-resizer {
+  width: 6px;
+  background: var(--border);
+  cursor: col-resize;
+  touch-action: none;
+  transition: background-color 0.15s;
+
+  &:hover,
+  &:focus-visible,
+  &--active {
+    background: var(--primary);
+  }
+}

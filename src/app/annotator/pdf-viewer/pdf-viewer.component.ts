@@ -12,7 +12,7 @@ import {
   signal,
   viewChildren,
 } from '@angular/core';
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import { getDocument } from 'pdfjs-dist';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 import type { Annotation, SelectionMarker, TextSelection } from '../../models/annotator.model';
 import { PdfPageComponent } from '../pdf-page/pdf-page.component';
@@ -22,8 +22,6 @@ import {
   resetMarker,
   usesMozUserSelect,
 } from '../selection-marker/selection-marker';
-
-GlobalWorkerOptions.workerSrc = 'pdf.worker.min.mjs';
 
 /** Scrollable list of pages. Reports text selections and clicks on highlights. */
 @Component({

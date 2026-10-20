@@ -1,0 +1,18 @@
+<div
+  class="sidebar-resizer"
+  [class.sidebar-resizer--active]="resizing()"
+  role="separator"
+  tabindex="0"
+  aria-orientation="vertical"
+  aria-label="Ancho del panel de comentarios"
+  title="Arrastra para cambiar el ancho · doble clic para restablecer"
+  data-testid="sidebar-resizer"
+  [attr.aria-valuenow]="sidebarWidth.width()"
+  [attr.aria-valuemin]="sidebarWidth.minWidth"
+  [attr.aria-valuemax]="sidebarWidth.maxWidth()"
+  (pointerdown)="startResize($event)"
+  (pointermove)="resize($event)"
+  (pointerup)="stopResize($event)"
+  (keydown)="resizeWithKeys($event)"
+  (dblclick)="sidebarWidth.reset()"
+></div>

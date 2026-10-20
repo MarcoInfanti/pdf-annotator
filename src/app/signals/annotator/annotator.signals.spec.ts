@@ -98,7 +98,6 @@ describe('AnnotatorSignals', () => {
     it('sets the document and annotations and clears selection, editing and dirty', async () => {
       await openDocument({ annotations: [annotation('a')] });
       store.add(selection());
-      spyOn(window, 'confirm').and.returnValue(true);
       await openDocument({ annotations: [annotation('b')] });
 
       expect(store.document()?.name).toBe('book.pdf');
@@ -116,15 +115,15 @@ describe('AnnotatorSignals', () => {
       );
     });
 
-    it('does not pick a file when dirty and the user declines to discard changes', async () => {
+    it('never calls confirm, even when dirty: the component asks first', async () => {
       await openDocument();
       store.add(selection());
-      files.pickPdf.calls.reset();
-      spyOn(window, 'confirm').and.returnValue(false);
+      const confirmSpy = spyOn(window, 'confirm');
 
-      await store.open();
+      await openDocument();
 
-      expect(files.pickPdf).not.toHaveBeenCalled();
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(files.pickPdf).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -295,6 +294,106 @@ describe('AnnotatorSignals', () => {
         [1, 10],
         [2, 10],
       ]);
+    });
+  });
+
+  describe('zoom', () => {
+    it('defaults the scale to 1.25', () => {
+      expect(store.scale()).toBe(1.25);
+    });
+
+    it('moves to the next and previous step', () => {
+      store.zoom(1);
+      expect(store.scale()).toBe(1.5);
+
+      store.setZoom(1.25);
+      store.zoom(-1);
+      expect(store.scale()).toBe(1.1);
+    });
+
+    it('moves to the neighbouring step from an off-step scale', () => {
+      store.setZoom(1.3);
+      store.zoom(1);
+      expect(store.scale()).toBe(1.5);
+
+      store.setZoom(1.3);
+      store.zoom(-1);
+      expect(store.scale()).toBe(1.25);
+    });
+
+    it('stays put at the ends of the range', () => {
+      store.setZoom(4);
+      store.zoom(1);
+      expect(store.scale()).toBe(4);
+
+      store.setZoom(0.25);
+      store.zoom(-1);
+      expect(store.scale()).toBe(0.25);
+    });
+
+    it('clamps setZoom to the range and keeps in-range values', () => {
+      store.setZoom(10);
+      expect(store.scale()).toBe(4);
+
+      store.setZoom(0.1);
+      expect(store.scale()).toBe(0.25);
+
+      store.setZoom(1.3);
+      expect(store.scale()).toBe(1.3);
+    });
+
+    it('exposes the rounded percentage', () => {
+      store.setZoom(1.3);
+
+      expect(store.zoomPercent()).toBe(130);
+    });
+  });
+
+  describe('listing and search', () => {
+    function commented(id: string, comment: string, quote = 'quote'): Annotation {
+      return { ...annotation(id), comment, quote };
+    }
+
+    it('hides comment-less annotations unless selected or being edited', async () => {
+      await openDocument({
+        annotations: [commented('a', 'hello'), commented('b', ''), commented('c', '')],
+      });
+      expect(store.listedAnnotations().map((a) => a.id)).toEqual(['a']);
+
+      store.select('b');
+      expect(store.listedAnnotations().map((a) => a.id)).toEqual(['a', 'b']);
+
+      store.startEditing('c');
+      expect(store.listedAnnotations().map((a) => a.id)).toEqual(['a', 'c']);
+    });
+
+    it('filters quote and comment case-insensitively with a trimmed term', async () => {
+      await openDocument({
+        annotations: [
+          commented('a', 'About FOO', 'x'),
+          commented('b', 'other', 'a foo here'),
+          commented('c', 'nothing', 'nope'),
+        ],
+      });
+
+      store.setSearch('  FoO ');
+
+      expect(store.search()).toBe('  FoO ');
+      expect(store.visibleAnnotations().map((a) => a.id)).toEqual(['a', 'b']);
+    });
+
+    it('lists everything listed when the term is empty', async () => {
+      await openDocument({ annotations: [commented('a', 'hello'), commented('b', '')] });
+
+      expect(store.visibleAnnotations()).toEqual(store.listedAnnotations());
+    });
+
+    it('counts the annotations that have a comment', async () => {
+      await openDocument({
+        annotations: [commented('a', 'hello'), commented('b', ''), commented('c', 'x')],
+      });
+
+      expect(store.commentCount()).toBe(2);
     });
   });
 
