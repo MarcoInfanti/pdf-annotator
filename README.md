@@ -53,3 +53,7 @@ Markdown.
 ## License
 
 [MIT](LICENSE) © 2026 Marco Infanti
+
+Third-party code keeps its own licence: pdf.js and RxJS (Apache-2.0), pdf-lib, marked, Angular and
+ngx-translate (MIT), pako (MIT and Zlib), tslib (0BSD). The production build writes every notice to
+`3rdpartylicenses.txt` (`extractLicenses` in `angular.json`); ship that file with the app.
