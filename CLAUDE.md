@@ -52,13 +52,17 @@ src/app/
   annotator/<unit>/<unit>.component.{ts,html,scss,spec.ts}   one folder per component
   annotator/annotator.data.ts                 data file (loose, allowed)
   annotator/<helper>/<helper>.ts (+ .spec.ts) helper modules: text-selection, selection-marker,
-                                              annotation-file, translatable-error, markdown
-                                              (pipe)
+                                              annotation-file, translatable-error, reading-position,
+                                              save-scheduler, scroll-tracker, unreachable-objects,
+                                              markdown (pipe)
   annotator/testing/dom-builders/dom-builders.ts  spec-only helpers (excluded from the app build)
   models/annotator.model.ts, models/layout.model.ts   types only, one file per feature
-  services/annotator/*.service.ts (+spec)     root services: file access, PDF codec
-  services/layout/*.service.ts (+spec)        preferences: reading mode, sidebar width, language
+  services/annotator/*.service.ts (+spec)     root services: file access, PDF codec, session
+                                              storage (reading position, recovery copy)
+  services/layout/*.service.ts (+spec)        preferences: reading mode, sidebar width, language,
+                                              autosave
   signals/annotator/annotator.signals.ts (+spec)  the feature store
+  signals/annotator/autosave.signals.ts (+spec)   the autosave store (save queue, save status)
   shared/inline-translate-loader/inline-translate-loader.ts (+spec)
 src/assets/i18n/es.json, en.json              bundled (imported), not served
 e2e/                                          Playwright; e2e/fixtures/ helpers
@@ -72,17 +76,20 @@ loose. File name matches the exported class.
 
 - **Services** are `providedIn: 'root'` and talk to the outside world (File System Access API,
   `localStorage`, DOM events). They hold no feature state. The readonly-signal preference services
-  in `services/layout/` (reading mode, sidebar width, language) are the accepted exception: a
+  in `services/layout/` (reading mode, sidebar width, language, autosave) are the accepted exception: a
   private `_x = signal(...)` published as `readonly x = this._x.asReadonly()`, changed only
   through a method.
-- **The store** is `@Injectable()` with no `providedIn`, listed in `AnnotatorComponent.providers`
-  so it lives and dies with the component. State is a private `_x` published with
-  `asReadonly()`, and every write goes through an action method (`setZoom`, `setSearch`, ...).
-  A store never exposes a `WritableSignal`.
-- Stores depend on services, never the reverse.
+- **The stores** (`AnnotatorSignals`, `AutosaveSignals`) are `@Injectable()` with no
+  `providedIn`, both listed in `AnnotatorComponent.providers` so they live and die with the
+  component. State is a private `_x` published with `asReadonly()`, and every write goes through
+  an action method (`setZoom`, `setSearch`, ...). A store never exposes a `WritableSignal`.
+- Stores depend on services, never the reverse. Between stores the dependency is one-way:
+  `AutosaveSignals` injects `AnnotatorSignals` and changes it only through its actions;
+  `AnnotatorSignals` never knows autosave exists.
 - Types live only in `models/<feature>.model.ts`, never inside a service, store or component.
 - **No fetch shape.** There is no HTTP. File I/O is user-triggered store actions, not
-  effect-driven fetches. Document loading stays in `PdfViewerComponent`, because a pdf.js
+  effect-driven fetches. The one exception is autosave: `AutosaveSignals` watches the annotator
+  store's change counter and editor state with effects and schedules writes through its queue. Document loading stays in `PdfViewerComponent`, because a pdf.js
   `PDFDocumentProxy` is a view resource.
 
 ## Components

@@ -28,7 +28,16 @@
     "ZOOM_IN_TITLE": "Zoom in (Ctrl +)",
     "ZOOM_LEVEL": "Zoom level",
     "FIT_WIDTH": "Fit to width",
-    "FIT_WIDTH_SHORT": "Width"
+    "FIT_WIDTH_SHORT": "Width",
+    "SAVING": "Saving…",
+    "SAVED": "Saved",
+    "SAVED_TITLE": "All changes are saved in the PDF",
+    "AUTOSAVE": "Autosave",
+    "AUTOSAVE_TITLE_ON": "Autosave on: changes are saved into the PDF a few seconds later",
+    "AUTOSAVE_TITLE_OFF": "Autosave off: press Save (Ctrl+S) to save",
+    "AUTOSAVE_UNAVAILABLE": "Autosave needs Chrome or Edge and an unprotected PDF",
+    "AUTOSAVE_PAUSED": "Autosave paused — press Save",
+    "AUTOSAVE_PAUSED_TITLE": "Autosave stopped because of missing permission or an error. Press Save to resume it."
   },
   "READING_MODE": {
     "NORMAL": "Normal",
@@ -40,7 +49,14 @@
     "ENCRYPTED": "This PDF is protected: the annotations will be saved to a separate .json file.",
     "SAVED_IN": "Saved to {{name}}",
     "DOWNLOADED": "The PDF with the annotations has been downloaded.",
-    "ERROR": "Error: {{message}}"
+    "ERROR": "Error: {{message}}",
+    "RESUME": "Continue where you left off (p. {{page}})",
+    "RESUME_DISMISS": "Not now",
+    "RECOVERY": "There are unsaved annotations from an earlier session with this PDF.",
+    "RECOVERY_ACTION": "Recover unsaved annotations",
+    "RECOVERY_DISMISS": "Not now",
+    "PERMISSION_DENIED": "There is no permission to write to the file. Use \"Download copy\" or open it again.",
+    "IMPORT_RETRY": "Press \"Import JSON\" again to choose the file."
   },
   "SIDEBAR": {
     "LABEL": "Annotations",

@@ -406,10 +406,16 @@ test.describe('regressions', () => {
     const before = await highlightBoxes(page);
     await page.getByTestId('annotator-toolbar-zoom-in').click();
     await expect(page.locator('.textLayer > .endOfContent:last-child')).toHaveCount(2);
-    const bravo = await boxOf(lineSpan(pageAt(page, 0), 'BRAVO'));
     await expect
       .poll(async () => (await highlightBoxes(page))[0].width)
       .toBeGreaterThan(before[0].width * 1.05);
+    // the zoom re-renders the text layer: measure the line only once its new span is laid out
+    // at the zoomed size (the old span may still be there, or be detached mid-measure)
+    const bravoSpan = lineSpan(pageAt(page, 0), 'BRAVO');
+    await expect
+      .poll(async () => (await bravoSpan.boundingBox().catch(() => null))?.height ?? 0)
+      .toBeGreaterThan(0);
+    const bravo = await boxOf(bravoSpan);
     const after = await highlightBoxes(page);
     expect(after).toHaveLength(before.length);
     const second = after[1];

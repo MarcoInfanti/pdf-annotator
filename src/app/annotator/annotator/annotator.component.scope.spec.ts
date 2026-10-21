@@ -12,10 +12,11 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import type { Annotation, TextSelection } from '../../models/annotator.model';
+import type { Annotation, TextSelection, ViewerPosition } from '../../models/annotator.model';
 import { FileAccessService } from '../../services/annotator/file-access.service';
 import { PdfAnnotationCodecService } from '../../services/annotator/pdf-annotation-codec.service';
 import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
+import { AutosaveSignals } from '../../signals/annotator/autosave.signals';
 import { AnnotatorToolbarComponent } from '../annotator-toolbar/annotator-toolbar.component';
 import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
 import { AnnotatorComponent } from './annotator.component';
@@ -34,8 +35,11 @@ class ViewerStub {
   readonly textSelected = output<TextSelection>();
   readonly annotationClicked = output<string | null>();
   readonly zoomRequested = output<1 | -1>();
+  readonly positionChanged = output<ViewerPosition>();
+  readonly documentStartMeasured = output<ViewerPosition>();
   readonly fitWidthScale = (): number => 1;
   readonly scrollTo = (): void => {};
+  readonly jumpTo = (): boolean => true;
 }
 
 describe('AnnotatorSignals scoping', () => {
@@ -123,5 +127,22 @@ describe('AnnotatorSignals scoping', () => {
     );
 
     expect(toolbar?.injector.get(AnnotatorSignals)).toBe(storeOf(fixture));
+  });
+
+  it('keeps the save store out of the root injector too', () => {
+    expect(() => TestBed.inject(AutosaveSignals)).toThrowError(/NullInjectorError|No provider/);
+  });
+
+  it('gives each page its own save store, shared with its toolbar child', () => {
+    const first = create();
+    const second = create();
+    const saveStoreOf = (fixture: ComponentFixture<AnnotatorComponent>): AutosaveSignals =>
+      fixture.debugElement.injector.get(AutosaveSignals);
+    const toolbar = first.debugElement.children.find(
+      (child) => child.componentInstance instanceof AnnotatorToolbarComponent,
+    );
+
+    expect(saveStoreOf(first)).not.toBe(saveStoreOf(second));
+    expect(toolbar?.injector.get(AutosaveSignals)).toBe(saveStoreOf(first));
   });
 });

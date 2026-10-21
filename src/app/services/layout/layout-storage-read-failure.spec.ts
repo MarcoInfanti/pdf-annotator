@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 
 import { InlineTranslateLoader } from '../../shared/inline-translate-loader/inline-translate-loader';
+import { AutosavePreferenceService } from './autosave-preference.service';
 import { LanguageService } from './language.service';
 import { ReadingModeService } from './reading-mode.service';
 import { SidebarWidthService } from './sidebar-width.service';
@@ -43,6 +44,12 @@ describe('layout services when localStorage cannot be read', () => {
 
     expect(reading.mode()).toBe('normal');
     expect(document.documentElement.hasAttribute('data-theme')).toBeFalse();
+  });
+
+  it('AutosavePreferenceService starts with autosave on', () => {
+    const autosave = TestBed.inject(AutosavePreferenceService);
+
+    expect(autosave.enabled()).toBeTrue();
   });
 
   it('LanguageService falls back to the browser language and still sets html lang and title', () => {

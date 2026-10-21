@@ -21,6 +21,8 @@ export async function openFixture(page: Page): Promise<void> {
   await page.addInitScript((data: string) => {
     const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
     const file = new File([bytes], 'fixture.pdf', { type: 'application/pdf' });
+    // These suites assert selection, not saving: a background write would only add noise.
+    localStorage.setItem('pdf-annotations.autosave', 'false');
     Object.assign(window, {
       showOpenFilePicker: () => Promise.resolve([{ getFile: () => Promise.resolve(file) }]),
     });

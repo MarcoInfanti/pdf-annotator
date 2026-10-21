@@ -15,6 +15,22 @@ aparecen de nuevo.
   - subrayados estándar de PDF con el comentario, visibles en Acrobat, Edge y otros lectores.
 - En Chrome y Edge se guarda sobre el mismo archivo (File System Access API); en otros navegadores
   se descarga una copia anotada.
+- **Autoguardado** (Chrome y Edge, activado por defecto; un interruptor en la barra de herramientas
+  lo desactiva): los cambios se escriben en el PDF abierto unos segundos después de dejar de editar
+  (3 s, más en archivos grandes, nunca más de 30 s). Espera mientras hay un editor de comentario
+  abierto, guarda al instante cuando la pestaña se oculta y un indicador muestra «sin guardar»,
+  «Guardando…», «Guardado» o «Autoguardado en pausa» (permiso perdido o error de escritura; pulsa
+  Guardar para reanudarlo). Los navegadores sin File System Access API y los PDF protegidos no se
+  autoguardan.
+- **Posición de lectura**: la app recuerda dónde lo dejaste (página y punto exacto) en el navegador
+  y, en cada guardado, dentro del PDF, de modo que al reabrirlo ofrece «Continuar donde lo dejaste».
+  La posición también se guarda como el `/OpenAction` estándar del PDF, así que otros lectores
+  pueden abrir el archivo en ese punto; cómo lo trata cada lector (sobre todo en páginas rotadas)
+  varía.
+- **Copia de recuperación**: cuando los cambios no pueden llegar al disco (navegadores sin
+  manejadores de archivo, PDF protegidos, autoguardado en pausa), las anotaciones sin guardar se
+  conservan en el almacenamiento local del navegador y se ofrecen de nuevo al abrir el mismo
+  archivo («Recuperar anotaciones no guardadas»).
 - Exportar / importar las anotaciones como JSON (copia de seguridad y PDFs protegidos).
 - Zoom (Ctrl + rueda, Ctrl +/−, ajustar al ancho), modos de lectura Normal / Sepia / Noche y panel
   lateral redimensionable con búsqueda.

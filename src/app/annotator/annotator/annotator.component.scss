@@ -12,6 +12,12 @@
   background: var(--notice-bg);
 }
 
+.notice__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .workspace {
   display: flex;
   flex: 1;

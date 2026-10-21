@@ -15,8 +15,15 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { getDocument } from 'pdfjs-dist';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
-import type { Annotation, SelectionMarker, TextSelection } from '../../models/annotator.model';
+import type {
+  Annotation,
+  SelectionMarker,
+  TextSelection,
+  ViewerPosition,
+} from '../../models/annotator.model';
 import { PdfPageComponent } from '../pdf-page/pdf-page.component';
+import { locatePage, viewportStart } from '../reading-position/reading-position';
+import { preferredScrollBehavior, ScrollTracker } from '../scroll-tracker/scroll-tracker';
 import {
   markSelectingLayers,
   moveEndOfContent,
@@ -83,10 +90,15 @@ export class PdfViewerComponent {
   readonly annotationClicked = output<string | null>();
   /** Ctrl + mouse wheel: 1 zooms in, -1 zooms out. */
   readonly zoomRequested = output<1 | -1>();
+  /** The spot at the top of the viewer once the user has finished scrolling. */
+  readonly positionChanged = output<ViewerPosition>();
+  /** The top of page 1 as pdf.js reports it (rotation and CropBox included), once a document loads. */
+  readonly documentStartMeasured = output<ViewerPosition>();
 
   /** The scroll container element. */
   protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly pageComponents = viewChildren(PdfPageComponent);
+  private readonly scrollTracker = new ScrollTracker(this.host, () => this.emitPosition());
   private pdf: PDFDocumentProxy | null = null;
   private pressedTextLayer: Element | null = null;
   private previousScale: number | null = null;
@@ -110,13 +122,15 @@ export class PdfViewerComponent {
 
   constructor() {
     effect(() => {
+      // A new document starts at the top: that scroll is not the user reading
+      this.scrollTracker.disarm();
       void this.loadDocument(this.data());
     });
     effect(() => this.keepCenterOnZoom(this.scale()));
     this.destroyRef.onDestroy(() => {
       void this.pdf?.destroy();
     });
-    afterNextRender(() => this.listenToSelection());
+    afterNextRender(() => this.listenToDocument());
   }
 
   /** Scale at which the first page fills the available width. */
@@ -132,8 +146,22 @@ export class PdfViewerComponent {
   scrollTo(annotation: Annotation): void {
     const page = annotation.page > 0 ? this.pageComponents().at(annotation.page - 1) : undefined;
     if (page) {
+      this.scrollTracker.arm();
       this.host.scrollTo({ top: page.offsetOf(annotation) - 80, behavior: 'smooth' });
     }
+  }
+
+  /**
+   * Scrolls so the spot sits at the top of the viewer, smoothly unless the user prefers reduced
+   * motion. Returns false, and does nothing, when that page is not loaded.
+   */
+  jumpTo(position: ViewerPosition): boolean {
+    const page = position.page > 0 ? this.pageComponents().at(position.page - 1) : undefined;
+    if (!page) return false;
+    this.scrollTracker.arm();
+    const top = page.offsetOfPoint(position.x, position.y);
+    this.host.scrollTo({ top, behavior: preferredScrollBehavior() });
+    return true;
   }
 
   /** Ctrl/Cmd + wheel zooms instead of scrolling. */
@@ -194,10 +222,12 @@ export class PdfViewerComponent {
   }
 
   /**
-   * Raw document listeners, like pdf.js' text layer builder: `selectionchange` fires on every caret
+   * Starts every raw listener of the viewer: the selection ones on the document, like pdf.js' text
+   * layer builder, and the scroll tracker. Raw document listeners: `selectionchange` fires on every caret
    * move, and they only touch DOM classes and styles, never signals, so no change detection runs.
+   * The scroll tracker listens here too: its listeners are raw and passive for the same reason.
    */
-  private listenToSelection(): void {
+  private listenToDocument(): void {
     const controller = new AbortController();
     const { signal } = controller;
     document.addEventListener('pointerdown', () => (this.pointerDown = true), { signal });
@@ -205,6 +235,7 @@ export class PdfViewerComponent {
     window.addEventListener('blur', () => this.releasePointer(), { signal });
     document.addEventListener('keyup', () => this.resetAfterKey(), { signal });
     document.addEventListener('selectionchange', () => this.followSelection(), { signal });
+    this.scrollTracker.listen(signal);
     this.destroyRef.onDestroy(() => controller.abort());
   }
 
@@ -238,6 +269,17 @@ export class PdfViewerComponent {
     this.previousRange = range.cloneRange();
   }
 
+  /** Reports where the viewer is looking: the page under its top edge and the point within it. */
+  private emitPosition(): void {
+    const pages = this.pageComponents();
+    const hit = locatePage(
+      this.host.scrollTop,
+      pages.map((page) => page.extent()),
+    );
+    const page = hit && pages.at(hit.index);
+    if (hit && page) this.positionChanged.emit(page.pointAt(hit.offset));
+  }
+
   private async loadDocument(data: Uint8Array): Promise<void> {
     const previous = this.pdf;
     this.pdf = null;
@@ -248,13 +290,26 @@ export class PdfViewerComponent {
       // pdf.js transfers the buffer to its worker, so it gets a copy.
       const pdf = await getDocument({ data: data.slice() }).promise;
       this.pdf = pdf;
-      const pages = await Promise.all(
-        Array.from({ length: pdf.numPages }, (_, i) => pdf.getPage(i + 1)),
-      );
-      if (this.pdf === pdf) this.pages.set(pages);
+      const pages = await loadPages(pdf);
+      if (this.pdf === pdf) {
+        this.pages.set(pages);
+        const start = documentStartOf(pages);
+        if (start) this.documentStartMeasured.emit(start);
+      }
     } catch (error) {
       console.error(error);
       this.error.set('VIEWER.OPEN_ERROR');
     }
   }
+}
+
+/** The top of the first page as pdf.js measures it; null for a document without pages. */
+function documentStartOf(pages: PDFPageProxy[]): ViewerPosition | null {
+  const first = pages.at(0);
+  return first ? viewportStart(first.getViewport({ scale: 1 }), 1) : null;
+}
+
+/** Fetches every page of the document. */
+function loadPages(pdf: PDFDocumentProxy): Promise<PDFPageProxy[]> {
+  return Promise.all(Array.from({ length: pdf.numPages }, (_, i) => pdf.getPage(i + 1)));
 }

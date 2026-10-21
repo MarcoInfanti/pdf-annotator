@@ -28,7 +28,16 @@
     "ZOOM_IN_TITLE": "Acercar (Ctrl +)",
     "ZOOM_LEVEL": "Nivel de zoom",
     "FIT_WIDTH": "Ajustar al ancho",
-    "FIT_WIDTH_SHORT": "Ancho"
+    "FIT_WIDTH_SHORT": "Ancho",
+    "SAVING": "Guardando…",
+    "SAVED": "Guardado",
+    "SAVED_TITLE": "Todos los cambios están guardados en el PDF",
+    "AUTOSAVE": "Autoguardado",
+    "AUTOSAVE_TITLE_ON": "Autoguardado activado: los cambios se guardan en el PDF unos segundos después",
+    "AUTOSAVE_TITLE_OFF": "Autoguardado desactivado: pulsa Guardar (Ctrl+S) para guardar",
+    "AUTOSAVE_UNAVAILABLE": "El autoguardado necesita Chrome o Edge y un PDF sin protección",
+    "AUTOSAVE_PAUSED": "Autoguardado en pausa — pulsa Guardar",
+    "AUTOSAVE_PAUSED_TITLE": "El autoguardado se detuvo por falta de permiso o por un error. Pulsa Guardar para reanudarlo."
   },
   "READING_MODE": {
     "NORMAL": "Normal",
@@ -40,7 +49,14 @@
     "ENCRYPTED": "Este PDF está protegido: las anotaciones se guardarán en un archivo .json aparte.",
     "SAVED_IN": "Guardado en {{name}}",
     "DOWNLOADED": "Se ha descargado el PDF con las anotaciones.",
-    "ERROR": "Error: {{message}}"
+    "ERROR": "Error: {{message}}",
+    "RESUME": "Continuar donde lo dejaste (pág. {{page}})",
+    "RESUME_DISMISS": "Ahora no",
+    "RECOVERY": "Hay anotaciones sin guardar de una sesión anterior con este PDF.",
+    "RECOVERY_ACTION": "Recuperar anotaciones no guardadas",
+    "RECOVERY_DISMISS": "Ahora no",
+    "PERMISSION_DENIED": "No hay permiso para escribir en el archivo. Usa «Descargar copia» o vuelve a abrirlo.",
+    "IMPORT_RETRY": "Pulsa «Importar JSON» de nuevo para elegir el archivo."
   },
   "SIDEBAR": {
     "LABEL": "Anotaciones",
