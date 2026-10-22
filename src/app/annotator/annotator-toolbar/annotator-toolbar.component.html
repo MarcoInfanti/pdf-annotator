@@ -3,7 +3,7 @@
     type="button"
     class="button button--primary"
     (click)="openRequested.emit()"
-    [disabled]="store.busy() || autosave.busy()"
+    [disabled]="store.busy()"
     data-testid="annotator-toolbar-open"
   >
     {{ 'TOOLBAR.OPEN' | translate }}
@@ -13,9 +13,9 @@
     <button
       type="button"
       class="button"
-      (click)="autosave.save()"
+      (click)="store.save()"
       data-testid="annotator-toolbar-save"
-      [disabled]="store.busy() || autosave.busy()"
+      [disabled]="store.busy()"
       [title]="
         (store.canOverwrite() ? 'TOOLBAR.SAVE_TITLE_OVERWRITE' : 'TOOLBAR.SAVE_TITLE_DOWNLOAD')
           | translate
@@ -28,31 +28,12 @@
         type="button"
         class="button"
         (click)="store.saveCopy()"
-        [disabled]="store.busy() || autosave.busy()"
+        [disabled]="store.busy()"
         data-testid="annotator-toolbar-save-copy"
       >
         {{ 'TOOLBAR.SAVE_COPY' | translate }}
       </button>
     }
-    <button
-      type="button"
-      class="button toolbar__autosave"
-      [attr.aria-pressed]="autosave.autosaveActive()"
-      [disabled]="!autosave.autosaveAvailable()"
-      [title]="
-        (!autosave.autosaveAvailable()
-          ? 'TOOLBAR.AUTOSAVE_UNAVAILABLE'
-          : autosave.autosaveEnabled()
-            ? 'TOOLBAR.AUTOSAVE_TITLE_ON'
-            : 'TOOLBAR.AUTOSAVE_TITLE_OFF'
-        ) | translate
-      "
-      (click)="autosave.setAutosave(!autosave.autosaveEnabled())"
-      data-testid="annotator-toolbar-autosave"
-    >
-      <span aria-hidden="true">{{ autosave.autosaveActive() ? '☑' : '☐' }}</span>
-      {{ 'TOOLBAR.AUTOSAVE' | translate }}
-    </button>
     <span class="toolbar__separator"></span>
     <button
       type="button"
@@ -65,7 +46,7 @@
     <button
       type="button"
       class="button"
-      (click)="importJson()"
+      (click)="store.importJson()"
       data-testid="annotator-toolbar-import-json"
     >
       {{ 'TOOLBAR.IMPORT_JSON' | translate }}
@@ -73,44 +54,14 @@
 
     <span class="toolbar__file" [title]="doc.name" data-testid="annotator-toolbar-file-name">
       {{ doc.name }}
-      <span
-        class="toolbar__status"
-        role="status"
-        aria-live="polite"
-        data-testid="annotator-toolbar-save-status"
-      >
-        @switch (autosave.saveStatus()) {
-          @case ('unsaved') {
-            <span
-              class="toolbar__dirty"
-              [title]="'TOOLBAR.UNSAVED_TITLE' | translate"
-              data-testid="annotator-toolbar-dirty"
-              ><span aria-hidden="true">●</span> {{ 'TOOLBAR.UNSAVED' | translate }}</span
-            >
-          }
-          @case ('saving') {
-            <span class="toolbar__saving" data-testid="annotator-toolbar-saving">{{
-              'TOOLBAR.SAVING' | translate
-            }}</span>
-          }
-          @case ('saved') {
-            <span
-              class="toolbar__saved"
-              [title]="'TOOLBAR.SAVED_TITLE' | translate"
-              data-testid="annotator-toolbar-saved"
-              ><span aria-hidden="true">✓</span> {{ 'TOOLBAR.SAVED' | translate }}</span
-            >
-          }
-          @case ('paused') {
-            <span
-              class="toolbar__paused"
-              [title]="'TOOLBAR.AUTOSAVE_PAUSED_TITLE' | translate"
-              data-testid="annotator-toolbar-autosave-paused"
-              >{{ 'TOOLBAR.AUTOSAVE_PAUSED' | translate }}</span
-            >
-          }
-        }
-      </span>
+      @if (store.dirty()) {
+        <span
+          class="toolbar__dirty"
+          [title]="'TOOLBAR.UNSAVED_TITLE' | translate"
+          data-testid="annotator-toolbar-dirty"
+          ><span aria-hidden="true">●</span> {{ 'TOOLBAR.UNSAVED' | translate }}</span
+        >
+      }
     </span>
 
     <div

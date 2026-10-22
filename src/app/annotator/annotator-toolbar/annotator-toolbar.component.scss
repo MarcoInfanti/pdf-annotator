@@ -27,28 +27,8 @@
   font-weight: 600;
 }
 
-.toolbar__status {
-  margin-left: 6px;
-}
-
-.toolbar__saving,
-.toolbar__saved {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.toolbar__paused {
-  color: var(--warning);
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.toolbar__autosave[aria-pressed='true'] {
-  font-weight: 600;
-}
-
 .toolbar__dirty {
+  margin-left: 6px;
   color: var(--warning);
   font-size: 12px;
   font-weight: 400;

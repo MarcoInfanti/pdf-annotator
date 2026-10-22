@@ -60,12 +60,6 @@ export interface OpenDocument {
   /** The PDF without this app's annotations; what is rendered and re-annotated on save. */
   cleanBytes: Uint8Array;
   encrypted: boolean;
-  /** Number of pages; with the name it identifies the document in localStorage. */
-  pageCount: number;
-  /** Size and modification time of the file as it was opened. */
-  stamp: FileStamp;
-  /** True when the browser granted write permission for the handle at open time. */
-  writeGranted: boolean;
 }
 
 /** Result of reading a PDF. */
@@ -74,10 +68,6 @@ export interface DecodedPdf {
   cleanBytes: Uint8Array;
   annotations: Annotation[];
   encrypted: boolean;
-  /** Number of pages of the document. */
-  pageCount: number;
-  /** Reading position embedded in the PDF; null when absent, invalid or the PDF is encrypted. */
-  position: ReadingPosition | null;
 }
 
 /** A file chosen by the user. */
@@ -86,29 +76,11 @@ export interface PickedFile {
   bytes: Uint8Array;
   /** Present when the browser supports the File System Access API (Chrome, Edge). */
   handle: FileSystemFileHandle | null;
-  /** Size and modification time of the file when it was picked. */
-  stamp: FileStamp;
-  /** True when write access was already granted at open (queried, never requested). Always false without a handle. */
-  writeGranted: boolean;
 }
 
 /** Options of `window.showOpenFilePicker` that this app uses. */
 export interface FilePickerOptions {
   types: { description: string; accept: Record<string, string[]> }[];
-}
-
-/** The File System Access picker function. */
-export type FilePickerFunction = NonNullable<FilePickerWindow['showOpenFilePicker']>;
-
-/** Rotations a PDF page can have. */
-export type PageRotation = 0 | 90 | 180 | 270;
-
-/** A write to the handle that has started and not finished. */
-export interface InFlightWrite {
-  /** Revision of the annotations that write is saving. */
-  revision: number;
-  /** Resolves with whether the write succeeded; never rejects. */
-  done: Promise<boolean>;
 }
 
 /** `window`, with the File System Access picker that only some browsers have. */
@@ -161,70 +133,3 @@ export type PdfViewport = ReturnType<PDFPageProxy['getViewport']>;
 
 /** A cancellable pdf.js canvas render. */
 export type PdfRenderTask = ReturnType<PDFPageProxy['render']>;
-
-/** A reading spot: 1-based page and the unrotated user-space point under the viewport's top-left corner. */
-export interface ViewerPosition {
-  page: number;
-  x: number;
-  y: number;
-}
-
-/** A stored reading position; zoom is informational (Continuar keeps the current zoom). */
-export interface ReadingPosition extends ViewerPosition {
-  zoom: number;
-  /** ISO 8601 timestamp; the newer position wins. */
-  updatedAt: string;
-}
-
-/** Vertical placement of a page inside the scroll container, in CSS pixels. */
-export interface PageExtent {
-  top: number;
-  height: number;
-}
-
-/** Which page holds a scroll offset, and how far into it (CSS pixels). */
-export interface PageHit {
-  /** 0-based index into the page list. */
-  index: number;
-  offset: number;
-}
-
-/** Identifies a document in localStorage: `<name>|<pageCount>`. */
-export interface DocumentIdentity {
-  name: string;
-  pageCount: number;
-}
-
-/** Size and modification time of a file; the baseline of a recovery copy. */
-export interface FileStamp {
-  size: number;
-  lastModified: number;
-}
-
-/** Unsaved annotations kept in localStorage while changes cannot reach the disk. */
-export interface RecoveryCopy {
-  annotations: Annotation[];
-  baseline: FileStamp;
-}
-
-/** What the toolbar save indicator shows. */
-export type SaveStatus = 'idle' | 'unsaved' | 'saving' | 'saved' | 'paused';
-
-/** Timer functions the save scheduler uses, injectable for specs. */
-export interface SchedulerTimers {
-  setTimeout(callback: () => void, ms: number): number;
-  clearTimeout(id: number): void;
-  /** Monotonic milliseconds. */
-  now(): number;
-}
-
-/** Argument of the File System Access permission methods. */
-export interface WritePermissionDescriptor {
-  mode: 'read' | 'readwrite';
-}
-
-/** A handle with the permission methods lib.dom lacks; absent in some browsers and in the e2e stub. */
-export type PermissionedFileHandle = FileSystemFileHandle & {
-  queryPermission?: (descriptor: WritePermissionDescriptor) => Promise<PermissionState>;
-  requestPermission?: (descriptor: WritePermissionDescriptor) => Promise<PermissionState>;
-};

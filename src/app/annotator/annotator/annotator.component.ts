@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import type { Annotation, TextSelection, ViewerPosition } from '../../models/annotator.model';
+import type { Annotation, TextSelection } from '../../models/annotator.model';
 import { HighlightPopupComponent } from '../highlight-popup/highlight-popup.component';
 import { AnnotatorToolbarComponent } from '../annotator-toolbar/annotator-toolbar.component';
 import { AnnotatorSidebarComponent } from '../annotator-sidebar/annotator-sidebar.component';
 import { AnnotatorSignals } from '../../signals/annotator/annotator.signals';
-import { AutosaveSignals } from '../../signals/annotator/autosave.signals';
 import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
 
 /** The annotator page: toolbar, PDF viewer, highlight popup and annotation sidebar. */
@@ -18,21 +17,18 @@ import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
     PdfViewerComponent,
     AnnotatorSidebarComponent,
   ],
-  providers: [AnnotatorSignals, AutosaveSignals],
+  providers: [AnnotatorSignals],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './annotator.component.html',
   styleUrl: './annotator.component.scss',
   host: {
     '(window:keydown)': 'handleShortcuts($event)',
     '(window:beforeunload)': 'warnUnsaved($event)',
-    '(document:visibilitychange)': 'flushIfHidden()',
   },
 })
 export class AnnotatorComponent {
   /** The feature store, provided by this component so it lives and dies with it. */
   protected readonly store = inject(AnnotatorSignals);
-  /** The save store, provided next to the feature store. */
-  protected readonly autosave = inject(AutosaveSignals);
   private readonly translate = inject(TranslateService);
   private readonly viewer = viewChild(PdfViewerComponent);
 
@@ -45,29 +41,12 @@ export class AnnotatorComponent {
     if (scale) this.store.setZoom(scale);
   }
 
-  /**
-   * Opens another PDF. With autosave off, unsaved changes are confirmed before the picker. With
-   * autosave on, the picker comes first and a pending change is saved before the file replaces the
-   * session; only a failed save asks for confirmation, and declining keeps the session.
-   */
-  protected async open(): Promise<void> {
-    if (!this.autosave.autosaveActive() && this.store.dirty() && !this.confirmDiscard()) return;
-    const picked = await this.store.pick();
-    if (!picked) return;
-    if (!(await this.autosave.flushBeforeReplace()) && !this.confirmDiscard()) return;
-    // The bytes read at pick time predate the save when the same file was picked
-    const fresh = await this.store.reread(picked);
-    if (fresh) await this.store.load(fresh);
-  }
-
-  /** Jumps to the offered reading position; the offer goes away only if the viewer could jump. */
-  protected resume(position: ViewerPosition): void {
-    if (this.viewer()?.jumpTo(position)) this.store.dismissResume();
-  }
-
-  /** DOM adapter: a tab that is going away may never come back, so save a pending change now. */
-  protected flushIfHidden(): void {
-    if (document.visibilityState === 'hidden') this.autosave.flushPendingSave();
+  /** Confirms before discarding unsaved changes, then lets the store open another PDF. */
+  protected open(): void {
+    // confirm() takes plain text read at click time, so it cannot use the pipe
+    const question: unknown = this.translate.instant('CONFIRM.DISCARD_CHANGES');
+    if (this.store.dirty() && !(typeof question === 'string' && confirm(question))) return;
+    void this.store.open();
   }
 
   /** Turns the pending selection into an annotation of the chosen colour and clears the browser selection. */
@@ -101,7 +80,7 @@ export class AnnotatorComponent {
     const ctrl = event.ctrlKey || event.metaKey;
     if (ctrl && event.key.toLowerCase() === 's') {
       event.preventDefault();
-      void this.autosave.save();
+      void this.store.save();
     } else if (ctrl && this.store.document() && ['+', '=', '-', '0'].includes(event.key)) {
       // Replaces the browser zoom, which would also shrink the toolbar and sidebar.
       event.preventDefault();
@@ -112,14 +91,8 @@ export class AnnotatorComponent {
     }
   }
 
-  /** Makes the browser ask for confirmation before leaving with unsaved changes or a write in flight. */
+  /** Makes the browser ask for confirmation before leaving with unsaved changes. */
   protected warnUnsaved(event: BeforeUnloadEvent): void {
-    if (this.store.dirty() || this.autosave.saveStatus() === 'saving') event.preventDefault();
-  }
-
-  private confirmDiscard(): boolean {
-    // confirm() takes plain text read at click time, so it cannot use the pipe
-    const question: unknown = this.translate.instant('CONFIRM.DISCARD_CHANGES');
-    return typeof question === 'string' && confirm(question);
+    if (this.store.dirty()) event.preventDefault();
   }
 }

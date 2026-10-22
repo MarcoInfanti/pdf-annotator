@@ -15,66 +15,6 @@
   </div>
 }
 
-@if (store.resumeOffer(); as offer) {
-  <div
-    class="notice"
-    role="group"
-    aria-labelledby="annotator-resume-label"
-    data-testid="annotator-resume"
-  >
-    <button
-      id="annotator-resume-label"
-      type="button"
-      class="button button--primary"
-      data-testid="annotator-resume-continue"
-      (click)="resume(offer)"
-    >
-      {{ 'NOTICE.RESUME' | translate: { page: offer.page } }}
-    </button>
-    <button
-      type="button"
-      class="icon-button"
-      [attr.aria-label]="'NOTICE.RESUME_DISMISS' | translate"
-      [title]="'NOTICE.RESUME_DISMISS' | translate"
-      data-testid="annotator-resume-dismiss"
-      (click)="store.dismissResume()"
-    >
-      ×
-    </button>
-  </div>
-}
-
-@if (store.recoveryOffer()) {
-  <div
-    class="notice"
-    role="group"
-    aria-labelledby="annotator-recovery-label"
-    data-testid="annotator-recovery"
-  >
-    <div class="notice__content">
-      <span id="annotator-recovery-label">{{ 'NOTICE.RECOVERY' | translate }}</span>
-      <button
-        type="button"
-        class="button"
-        data-testid="annotator-recovery-restore"
-        (click)="store.recover()"
-      >
-        {{ 'NOTICE.RECOVERY_ACTION' | translate }}
-      </button>
-    </div>
-    <button
-      type="button"
-      class="icon-button"
-      [attr.aria-label]="'NOTICE.RECOVERY_DISMISS' | translate"
-      [title]="'NOTICE.RECOVERY_DISMISS' | translate"
-      data-testid="annotator-recovery-dismiss"
-      (click)="store.dismissRecovery()"
-    >
-      ×
-    </button>
-  </div>
-}
-
 @if (store.document(); as doc) {
   <main class="workspace" data-testid="annotator-workspace">
     <app-pdf-viewer
@@ -86,8 +26,6 @@
       (textSelected)="pendingSelection.set($event)"
       (annotationClicked)="selectFromPdf($event)"
       (zoomRequested)="store.zoom($event)"
-      (positionChanged)="store.setPosition($event)"
-      (documentStartMeasured)="store.setDocumentStart($event)"
       (scroll)="dismissSelection()"
     />
 

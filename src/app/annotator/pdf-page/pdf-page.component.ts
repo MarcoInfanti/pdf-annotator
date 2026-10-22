@@ -22,8 +22,6 @@ import type {
   PdfRenderTask,
   PdfViewport,
   SelectionMarker,
-  PageExtent,
-  ViewerPosition,
 } from '../../models/annotator.model';
 import { LanguageService } from '../../services/layout/language.service';
 import { appendEndOfContent, selectionInLayer } from '../text-selection/text-selection';
@@ -196,26 +194,6 @@ export class PdfPageComponent {
   offsetOf(annotation: Annotation): number {
     const tops = annotation.rects.map((rect) => toViewportBox(this.viewport(), rect).top);
     return this.host.offsetTop + Math.min(...tops);
-  }
-
-  /** Where this page sits in the scroll container, in CSS pixels. */
-  extent(): PageExtent {
-    return { top: this.host.offsetTop, height: this.host.offsetHeight };
-  }
-
-  /**
-   * The user-space point at the left edge of this page, `offset` CSS pixels below its top. The
-   * viewport already accounts for rotation and CropBox, so the point is in unrotated PDF space.
-   */
-  pointAt(offset: number): ViewerPosition {
-    const [x, y] = this.viewport().convertToPdfPoint(0, offset) as number[];
-    return { page: this.page().pageNumber, x, y };
-  }
-
-  /** Scroll offset (in the container) that puts the given user-space point at the top edge. */
-  offsetOfPoint(x: number, y: number): number {
-    const [, top] = this.viewport().convertToViewportPoint(x, y) as number[];
-    return this.host.offsetTop + top;
   }
 
   private async render(viewport: PdfViewport, visible: boolean): Promise<void> {

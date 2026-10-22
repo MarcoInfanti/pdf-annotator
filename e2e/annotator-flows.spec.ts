@@ -9,8 +9,6 @@ import {
   highlightLines,
   installFileSystem,
   openApp,
-  readStorage,
-  setFs,
 } from './fixtures/app-helpers';
 import { boxOf, centreOf, drag, lineSpan, pageAt } from './fixtures/pdf-page-helpers';
 import { buildSelectionFixture } from './fixtures/selection-fixture';
@@ -78,7 +76,6 @@ test.describe('save and reopen', () => {
     await page.getByTestId('annotator-toolbar-save').click();
     await expect(page.getByTestId('annotator-notice')).toContainText('fixture.pdf');
     await expect(page.getByTestId('annotator-toolbar-dirty')).toHaveCount(0);
-    await expect(page.getByTestId('annotator-toolbar-saved')).toBeVisible();
     expect((await fsState(page)).writes).toBe(1);
     expect(Buffer.from((await fsState(page)).bytes.slice(0, 5)).toString()).toBe('%PDF-');
 
@@ -193,7 +190,6 @@ test.describe('save and reopen', () => {
       ES['NOTICE.DOWNLOADED'].slice(0, 12),
     );
     await expect(page.getByTestId('annotator-toolbar-dirty')).toHaveCount(0);
-    expect(await readStorage(page, 'pdf-annotations.recovery.plain.pdf|2')).toBeNull(); // the download cleared the copy
     await expect(page.getByTestId('annotator-toolbar-save')).toHaveAttribute(
       'title',
       ES['TOOLBAR.SAVE_TITLE_DOWNLOAD'],
@@ -430,53 +426,6 @@ test.describe('dirty state and confirmations', () => {
     await expect(page.getByTestId('annotator-sidebar-count')).toHaveText('0');
     await expect(page.getByTestId('annotator-toolbar-dirty')).toHaveCount(0);
     await expect(highlights(page)).toHaveCount(0);
-  });
-
-  test('with autosave on, opening over a pending change picks first, saves once and asks nothing', async ({
-    page,
-  }) => {
-    await openApp(page, { autosave: true });
-    await highlightLines(page, 'ALPHA', 'BRAVO');
-    await commentOn(page, 'pending');
-    const dialogs: string[] = [];
-    page.on('dialog', (dialog) => {
-      dialogs.push(dialog.message());
-      void dialog.dismiss();
-    });
-    await setFs(page, { name: 'next.pdf' });
-    await page.getByTestId('annotator-toolbar-open').click();
-    await expect(page.getByTestId('annotator-toolbar-file-name')).toContainText('next.pdf');
-    const state = await fsState(page);
-    expect(state.pickerCalls).toBe(2);
-    expect(state.writes).toBe(1);
-    expect(dialogs).toEqual([]);
-    await expect(page.getByTestId('annotator-toolbar-dirty')).toHaveCount(0);
-  });
-
-  test('with autosave on and a failing save, Open picks, then asks; cancelling keeps the session and loads nothing', async ({
-    page,
-  }) => {
-    await openApp(page, { autosave: true });
-    await highlightLines(page, 'ALPHA', 'BRAVO');
-    await commentOn(page, 'pending');
-    await setFs(page, { name: 'next.pdf', failWrites: 1000 });
-    const asked = answerNextDialog(page, false);
-    await page.getByTestId('annotator-toolbar-open').click();
-    expect(await asked).toBe(ES['CONFIRM.DISCARD_CHANGES']);
-    const state = await fsState(page);
-    expect(state.pickerCalls).toBe(2);
-    expect(state.writes).toBe(0);
-    await expect(page.getByTestId('annotator-toolbar-file-name')).toContainText('fixture.pdf');
-    await expect(page.getByTestId('annotator-toolbar-file-name')).not.toContainText('next.pdf');
-    await expect(cards(page)).toHaveCount(1);
-    await expect(page.getByTestId('annotator-toolbar-open')).toBeEnabled();
-
-    // accepting the same prompt does replace the session
-    const askedAgain = answerNextDialog(page, true);
-    await page.getByTestId('annotator-toolbar-open').click();
-    await askedAgain;
-    await expect(page.getByTestId('annotator-toolbar-file-name')).toContainText('next.pdf');
-    await expect(cards(page)).toHaveCount(0);
   });
 
   test('the empty-state open button never asks for confirmation', async ({ page }) => {

@@ -16,19 +16,6 @@ still there.
     readers.
 - In Chrome and Edge, saving writes back to the same file (File System Access API); other browsers
   download an annotated copy.
-- **Autosave** (Chrome and Edge, on by default; a toggle in the toolbar turns it off): changes are
-  written back into the open PDF a few seconds after you stop editing (3 s, longer for big files,
-  never more than 30 s). It waits while a comment editor is open, saves at once when the tab is
-  hidden, and an indicator shows "unsaved", "Saving…", "Saved" or "Autosave paused" (permission
-  lost or a write failed; press Save to resume). Browsers without the File System Access API and
-  password-protected PDFs are not autosaved.
-- **Reading position**: the app remembers where you stopped (page and exact point) in the browser
-  and, on every save, inside the PDF, so reopening offers "Continue where you left off". The
-  position is also stored as the PDF's standard `/OpenAction`, so other readers may open the file
-  at that spot; how each reader treats it (notably on rotated pages) varies.
-- **Recovery copy**: whenever changes cannot reach the disk (browsers without file handles,
-  protected PDFs, autosave paused), the unsaved annotations are kept in the browser's local
-  storage and offered back the next time you open the same file ("Recover unsaved annotations").
 - Export / import annotations as JSON (backups and password-protected PDFs).
 - Zoom (Ctrl + wheel, Ctrl +/−, fit to width), Normal / Sepia / Night reading modes, and a
   resizable, searchable sidebar.

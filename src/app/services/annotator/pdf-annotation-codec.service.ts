@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import type { PDFPage } from 'pdf-lib';
 import {
   decodePDFRawStream,
   PDFDict,
@@ -10,26 +9,16 @@ import {
   PDFRef,
   PDFString,
 } from 'pdf-lib';
-import type { Annotation, DecodedPdf, ReadingPosition } from '../../models/annotator.model';
+import type { Annotation, DecodedPdf } from '../../models/annotator.model';
 import {
   parseAnnotationFile,
   serializeAnnotations,
 } from '../../annotator/annotation-file/annotation-file';
-import { removeUnreachable } from '../../annotator/unreachable-objects/unreachable-objects';
-import {
-  normalizeRotation,
-  openActionAxis,
-  parseReadingPosition,
-} from '../../annotator/reading-position/reading-position';
 
 /** Catalog key holding the JSON with every annotation (the source of truth). */
 const DATA_KEY = PDFName.of('PdfAnnotationsData');
 /** Marks the Highlight annotations written by this app, so they can be replaced on save. */
 const ID_KEY = PDFName.of('PdfAnnotationsId');
-/** Catalog key holding the reading position as a JSON text string; overwritten in place on save. */
-const POSITION_KEY = PDFName.of('PdfAnnotationsPosition');
-/** Standard catalog entry that makes other readers open at the reading position. */
-const OPEN_ACTION_KEY = PDFName.of('OpenAction');
 
 /**
  * Reads and writes annotations inside the PDF itself. They are stored twice:
@@ -41,71 +30,28 @@ export class PdfAnnotationCodecService {
   /** Reads the annotations and returns the PDF without them; encrypted PDFs come back untouched. */
   async decode(bytes: Uint8Array): Promise<DecodedPdf> {
     const doc = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
-    const pageCount = doc.getPageCount();
     if (doc.isEncrypted) {
-      return { cleanBytes: bytes, annotations: [], encrypted: true, pageCount, position: null };
+      return { cleanBytes: bytes, annotations: [], encrypted: true };
     }
     const annotations = this.readData(doc);
-    const position = this.readPosition(doc, pageCount);
     const stripped = this.strip(doc);
-    if (stripped) removeUnreachable(doc.context);
     const cleanBytes = stripped ? await doc.save() : bytes;
-    return { cleanBytes, annotations, encrypted: false, pageCount, position };
+    return { cleanBytes, annotations, encrypted: false };
   }
 
-  /**
-   * Writes the annotations into a clean PDF; annotations on missing pages are skipped. With a
-   * position, it is also stored in the catalog and set as the standard /OpenAction; with null the
-   * original /OpenAction and stored position are left untouched.
-   */
-  async encode(
-    cleanBytes: Uint8Array,
-    annotations: Annotation[],
-    position: ReadingPosition | null,
-  ): Promise<Uint8Array> {
+  /** Writes the annotations into a clean PDF; annotations on missing pages are skipped. */
+  async encode(cleanBytes: Uint8Array, annotations: Annotation[]): Promise<Uint8Array> {
     const doc = await PDFDocument.load(cleanBytes, { updateMetadata: false });
-    this.addHighlights(doc, annotations);
-    this.writePosition(doc, position);
-    const data = new TextEncoder().encode(serializeAnnotations(annotations));
-    doc.catalog.set(DATA_KEY, doc.context.register(doc.context.flateStream(data)));
-    return doc.save();
-  }
-
-  private addHighlights(doc: PDFDocument, annotations: Annotation[]): void {
     const pages = doc.getPages();
     for (const annotation of annotations) {
       const page = annotation.page > 0 ? pages.at(annotation.page - 1) : undefined;
       if (page) {
-        // Only annotations are added, never content; with the default, every save would wrap the
-        // page contents in yet another q/Q pair of streams
-        (page.node as unknown as { autoNormalizeCTM: boolean }).autoNormalizeCTM = false;
         page.node.addAnnot(doc.context.register(this.highlightDict(doc, annotation, page.ref)));
       }
     }
-  }
-
-  /**
-   * Stores the position as JSON and aims /OpenAction at it. Only the coordinate that scrolls the
-   * page vertically on screen is set: y for upright pages, x for pages turned sideways.
-   */
-  private writePosition(doc: PDFDocument, position: ReadingPosition | null): void {
-    const page: PDFPage | undefined = position ? doc.getPages().at(position.page - 1) : undefined;
-    if (!position || !page) return;
-    doc.catalog.set(POSITION_KEY, PDFHexString.fromText(JSON.stringify(position)));
-    const axis = openActionAxis(normalizeRotation(page.getRotation().angle));
-    const target = axis === 'y' ? [null, position.y, null] : [position.x, null, null];
-    doc.catalog.set(OPEN_ACTION_KEY, doc.context.obj([page.ref, 'XYZ', ...target]));
-  }
-
-  private readPosition(doc: PDFDocument, pageCount: number): ReadingPosition | null {
-    const value = doc.catalog.lookup(POSITION_KEY);
-    if (!(value instanceof PDFHexString || value instanceof PDFString)) return null;
-    try {
-      const position = parseReadingPosition(JSON.parse(value.decodeText()));
-      return position && position.page <= pageCount ? position : null;
-    } catch {
-      return null;
-    }
+    const data = new TextEncoder().encode(serializeAnnotations(annotations));
+    doc.catalog.set(DATA_KEY, doc.context.register(doc.context.flateStream(data)));
+    return doc.save();
   }
 
   private readData(doc: PDFDocument): Annotation[] {
